@@ -11,6 +11,8 @@ import javax.swing.JTextField;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JButton;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 public class V1 extends JFrame {
 
@@ -99,6 +101,14 @@ public class V1 extends JFrame {
 		scrollPane.setViewportView(txtS);
 		
 		btnP = new JButton("Calcular Promedio");
+		btnP.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				double n1=Double.parseDouble(txtN1.getText());
+				double n2=Double.parseDouble(txtN2.getText());
+				double n3=Double.parseDouble(txtN3.getText());
+				double n4=Double.parseDouble(txtN4.getText());
+			}
+		});
 		btnP.setBounds(129, 89, 121, 31);
 		contentPane.add(btnP);
 
