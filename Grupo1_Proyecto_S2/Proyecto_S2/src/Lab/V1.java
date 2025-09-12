@@ -108,6 +108,11 @@ public class V1 extends JFrame {
 				double n3=Double.parseDouble(txtN3.getText());
 				double n4=Double.parseDouble(txtN4.getText());
 				Evaluacion c1=new Evaluacion(n1,n2,n3,n4);
+				txtS.setText("");
+				txtS.append("El promedio es: "+c1.getPromedio());
+
+
+
 			}
 		});
 		btnP.setBounds(129, 89, 121, 31);
