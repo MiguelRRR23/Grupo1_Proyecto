@@ -114,6 +114,11 @@ public class V1 extends JFrame implements ActionListener {
 		btnNewButton_1.addActionListener(this);
 		btnNewButton_1.setBounds(153, 234, 103, 23);
 		contentPane.add(btnNewButton_1);
+		
+		btnNewButton_2 = new JButton("BUSCAR");
+		btnNewButton_2.addActionListener(this);
+		btnNewButton_2.setBounds(294, 234, 89, 23);
+		contentPane.add(btnNewButton_2);
 
 	}
 	
@@ -135,6 +140,7 @@ public class V1 extends JFrame implements ActionListener {
 	
 	OPERAC ae=new OPERAC();
 	private JButton btnNewButton_1;
+	private JButton btnNewButton_2;
 	void Listado() {
 		Imprimir("DNI\t NOMBRE Y APELLIDO\t TIPO DE CUENTA\t CANTIDAD");
 		for(int i=0; i<ae.Tamaño(); i++) {
@@ -143,6 +149,9 @@ public class V1 extends JFrame implements ActionListener {
 	}
 
 	public void actionPerformed(ActionEvent e) {
+		if (e.getSource() == btnNewButton_2) {
+			do_btnNewButton_2_actionPerformed(e);
+		}
 		if (e.getSource() == btnNewButton_1) {
 			do_btnNewButton_1_actionPerformed(e);
 		}
@@ -161,5 +170,14 @@ public class V1 extends JFrame implements ActionListener {
 			ae.Adicionar(e1);
 		}
 		else JOptionPane.showMessageDialog(this, "Este registro ya existe. Ingrese uno nuevo");
+	}
+	protected void do_btnNewButton_2_actionPerformed(ActionEvent e) {
+		Banco es=ae.Buscar(leerDNI());
+		if(es!=null) {
+			Imprimir("DNI\t NOMBRE Y APELLIDO\t TIPO DE CUENTA\t CANTIDAD");
+			Imprimir(""+es.getDni()+"\t"+es.getNom()+"\t\t"+es.getTipo()+"\t\t"+es.getCanti());
+		}
+	else JOptionPane.showMessageDialog(this, "No extiste este registro. Ingrese de nuevo");
+		
 	}
 }
