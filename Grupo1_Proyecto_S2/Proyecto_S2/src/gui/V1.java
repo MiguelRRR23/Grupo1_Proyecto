@@ -7,8 +7,10 @@ import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
 import Arreglo.OPERAC;
+import Clase.Banco;
 
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -107,6 +109,11 @@ public class V1 extends JFrame implements ActionListener {
 		btnNewButton.addActionListener(this);
 		btnNewButton.setBounds(24, 234, 89, 23);
 		contentPane.add(btnNewButton);
+		
+		btnNewButton_1 = new JButton("ADICIONAR");
+		btnNewButton_1.addActionListener(this);
+		btnNewButton_1.setBounds(153, 234, 103, 23);
+		contentPane.add(btnNewButton_1);
 
 	}
 	
@@ -127,6 +134,7 @@ public class V1 extends JFrame implements ActionListener {
 	}
 	
 	OPERAC ae=new OPERAC();
+	private JButton btnNewButton_1;
 	void Listado() {
 		Imprimir("DNI\t NOMBRE Y APELLIDO\t TIPO DE CUENTA\t CANTIDAD");
 		for(int i=0; i<ae.Tamaño(); i++) {
@@ -135,6 +143,9 @@ public class V1 extends JFrame implements ActionListener {
 	}
 
 	public void actionPerformed(ActionEvent e) {
+		if (e.getSource() == btnNewButton_1) {
+			do_btnNewButton_1_actionPerformed(e);
+		}
 		if (e.getSource() == btnNewButton) {
 			do_btnNewButton_actionPerformed(e);
 		}
@@ -142,5 +153,13 @@ public class V1 extends JFrame implements ActionListener {
 	protected void do_btnNewButton_actionPerformed(ActionEvent e) {
 		txtS.setText("");
 		Listado();
+	}
+	protected void do_btnNewButton_1_actionPerformed(ActionEvent e) {
+		Banco es=ae.Buscar(leerDNI());
+		if(es==null) {
+			Banco e1=new Banco(leerDNI(), leerNomApell(),leerTipo(),LeerCanti());
+			ae.Adicionar(e1);
+		}
+		else JOptionPane.showMessageDialog(this, "Este registro ya existe. Ingrese uno nuevo");
 	}
 }
