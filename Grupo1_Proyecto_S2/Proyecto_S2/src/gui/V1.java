@@ -124,6 +124,11 @@ public class V1 extends JFrame implements ActionListener {
 		btnNewButton_3.addActionListener(this);
 		btnNewButton_3.setBounds(405, 234, 89, 23);
 		contentPane.add(btnNewButton_3);
+		
+		btnNewButton_4 = new JButton("MODIFICAR");
+		btnNewButton_4.addActionListener(this);
+		btnNewButton_4.setBounds(506, 234, 103, 23);
+		contentPane.add(btnNewButton_4);
 
 	}
 	
@@ -147,6 +152,7 @@ public class V1 extends JFrame implements ActionListener {
 	private JButton btnNewButton_1;
 	private JButton btnNewButton_2;
 	private JButton btnNewButton_3;
+	private JButton btnNewButton_4;
 	void Listado() {
 		Imprimir("DNI\t NOMBRE Y APELLIDO\t TIPO DE CUENTA\t CANTIDAD");
 		for(int i=0; i<ae.Tamaño(); i++) {
@@ -155,6 +161,9 @@ public class V1 extends JFrame implements ActionListener {
 	}
 
 	public void actionPerformed(ActionEvent e) {
+		if (e.getSource() == btnNewButton_4) {
+			do_btnNewButton_4_actionPerformed(e);
+		}
 		if (e.getSource() == btnNewButton_3) {
 			do_btnNewButton_3_actionPerformed(e);
 		}
@@ -193,5 +202,15 @@ public class V1 extends JFrame implements ActionListener {
 		Banco es=ae.Buscar(leerDNI());
         if(es!=null) ae.Eliminar(es);
         else JOptionPane.showMessageDialog(this,"El registro fue eliminado" );
+	}
+	protected void do_btnNewButton_4_actionPerformed(ActionEvent e) {
+		Banco es=ae.Buscar(leerDNI());
+        if(es!=null) {
+            es.setDni(leerDNI());
+            es.setNom(leerNomApell());
+            es.setTipo(leerTipo());
+            es.setCanti(LeerCanti());
+        }
+        else JOptionPane.showMessageDialog(this,"No existe el registro");
 	}
 }
