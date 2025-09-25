@@ -133,16 +133,48 @@ public class V1 extends JFrame implements ActionListener {
 	}
 	
 	int leerDNI() {
-		return Integer.parseInt(txtDni.getText());
+		String texto = txtDni.getText().trim();
+	    if (texto.isEmpty()) {
+	        JOptionPane.showMessageDialog(this, "El campo DNI no puede estar vacío.");
+	        return -1;
+	    }
+	    try {
+	        int dni = Integer.parseInt(texto);
+	        if (dni <= 0) {
+	            JOptionPane.showMessageDialog(this, "El DNI no puede ser negativo o cero.");
+	            return -1;
+	        }
+	        return dni;
+	    } catch (NumberFormatException ex) {
+	        JOptionPane.showMessageDialog(this, "Este campo solo permite números.");
+	        return -1;
+	    }
 	}
+	
+	
 	String leerNomApell() {
-		return txtNom.getText();
+		String nom = txtNom.getText().trim();
+	    if (nom.isEmpty()) {
+	        JOptionPane.showMessageDialog(this, "El campo Nombres y Apellidos no puede estar vacío.");
+	        return null;
+	    }
+	    
+	    if (nom.matches("\\d+")) {
+	        JOptionPane.showMessageDialog(this, "El campo Nombres y Apellidos no puede contener solo números.");
+	        return null;
+	    }
+	    return nom;
 	}
+	
 	String leerTipo() {
 		return txtTipo.getText();
 	}
 	double LeerCanti() {
-		return Double.parseDouble(txtCanti.getText());
+		try {
+            return Double.parseDouble(txtCanti.getText());
+        } catch (NumberFormatException ex) {
+            return 0;
+        }
 	}
 	void Imprimir(String s) {
 		txtS.append(s+"\n");
