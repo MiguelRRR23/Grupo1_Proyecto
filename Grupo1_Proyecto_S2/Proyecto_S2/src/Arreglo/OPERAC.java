@@ -38,6 +38,23 @@ public Banco Buscar(int dni) {
 	}
 	return null;
 }
+public Banco Buscar(String nom) {
+    for (Banco b : banc) {
+        if (b.getNom().equalsIgnoreCase(nom)) return b;
+    }
+    return null;
+}
+
+public Banco Buscar(String nom, String tipo) {
+	for (Banco b : banc) {
+        if (b.getNom().equalsIgnoreCase(nom)) {
+            return b;
+        }
+    }
+    return null;
+}
+
+
 
 public void Eliminar (Banco x) {
 	banc.remove(x);
