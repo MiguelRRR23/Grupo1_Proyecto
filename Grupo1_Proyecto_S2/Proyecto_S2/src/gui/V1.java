@@ -181,6 +181,8 @@ public class V1 extends JFrame implements ActionListener {
 		txtS.setText("");
 		Listado();
 	}
+	
+	///BOTON ADICIONAR
 	protected void do_btnNewButton_1_actionPerformed(ActionEvent e) {
 		Banco es=ae.Buscar(leerDNI());
 		if(es==null) {
@@ -188,7 +190,10 @@ public class V1 extends JFrame implements ActionListener {
 			ae.Adicionar(e1);
 		}
 		else JOptionPane.showMessageDialog(this, "Este registro ya existe. Ingrese uno nuevo");
+	
 	}
+	
+	///BOTON BUSCAR
 	protected void do_btnNewButton_2_actionPerformed(ActionEvent e) {
 		Banco es=ae.Buscar(leerDNI());
 		if(es!=null) {
@@ -198,11 +203,15 @@ public class V1 extends JFrame implements ActionListener {
 	else JOptionPane.showMessageDialog(this, "No extiste este registro. Ingrese de nuevo");
 		
 	}
+	
+	///BOTON ELIMINAR
 	protected void do_btnNewButton_3_actionPerformed(ActionEvent e) {
 		Banco es=ae.Buscar(leerDNI());
         if(es!=null) ae.Eliminar(es);
         else JOptionPane.showMessageDialog(this,"El registro fue eliminado" );
 	}
+	
+	///BOTON MODIFICAR
 	protected void do_btnNewButton_4_actionPerformed(ActionEvent e) {
 		Banco es=ae.Buscar(leerDNI());
         if(es!=null) {

@@ -17,6 +17,13 @@ public void Adicionar(Banco x) {
 	banc.add(x);
 }
 
+public void Adicionar(int dni, String nom, String tipo, double canti) {
+    Banco b = new Banco(dni, nom, tipo, canti);
+    banc.add(b);
+}
+
+
+
 public Banco Obtener(int x) {
 	return banc.get(x);
 	
