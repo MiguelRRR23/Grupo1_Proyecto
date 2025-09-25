@@ -59,5 +59,14 @@ public Banco Buscar(String nom, String tipo) {
 public void Eliminar (Banco x) {
 	banc.remove(x);
 }
+public void Eliminar(int dni) {
+    Banco b = Buscar(dni);
+    if (b != null) banc.remove(b);
+}
+
+public void Eliminar(String nom) {
+    Banco b = Buscar(nom);
+    if (b != null) banc.remove(b);
+}
 
 }
