@@ -1,40 +1,82 @@
 package Clase;
 
 public class Banco {
-	private int dni;
-	private String nom,tipo;
-	private double canti;
-	public Banco(int dni, String nom, String tipo, double canti) {
-		
-		this.dni = dni;
-		this.nom = nom;
-		this.tipo = tipo;
-		this.canti = canti;
+	private int codigoBanco;
+    private String nombreBanco;
+    private String direccion;
+    private String ciudad;
+    private String telefono;
+    private String ruc;
+    private String gerente;
+    
+	public Banco(int codigoBanco, String nombreBanco, String direccion, String ciudad, String telefono, String ruc,
+			String gerente) {
+		this.codigoBanco = codigoBanco;
+		this.nombreBanco = nombreBanco;
+		this.direccion = direccion;
+		this.ciudad = ciudad;
+		this.telefono = telefono;
+		this.ruc = ruc;
+		this.gerente = gerente;
 	}
-	public int getDni() {
-		return dni;
+
+	public int getCodigoBanco() {
+		return codigoBanco;
 	}
-	public void setDni(int dni) {
-		this.dni = dni;
+
+	public void setCodigoBanco(int codigoBanco) {
+		this.codigoBanco = codigoBanco;
 	}
-	public String getNom() {
-		return nom;
+
+	public String getNombreBanco() {
+		return nombreBanco;
 	}
-	public void setNom(String nom) {
-		this.nom = nom;
+
+	public void setNombreBanco(String nombreBanco) {
+		this.nombreBanco = nombreBanco;
 	}
-	public String getTipo() {
-		return tipo;
+
+	public String getDireccion() {
+		return direccion;
 	}
-	public void setTipo(String tipo) {
-		this.tipo = tipo;
+
+	public void setDireccion(String direccion) {
+		this.direccion = direccion;
 	}
-	public double getCanti() {
-		return canti;
+
+	public String getCiudad() {
+		return ciudad;
 	}
-	public void setCanti(double canti) {
-		this.canti = canti;
+
+	public void setCiudad(String ciudad) {
+		this.ciudad = ciudad;
 	}
+
+	public String getTelefono() {
+		return telefono;
+	}
+
+	public void setTelefono(String telefono) {
+		this.telefono = telefono;
+	}
+
+	public String getRuc() {
+		return ruc;
+	}
+
+	public void setRuc(String ruc) {
+		this.ruc = ruc;
+	}
+
+	public String getGerente() {
+		return gerente;
+	}
+
+	public void setGerente(String gerente) {
+		this.gerente = gerente;
+	}
+
+    
 	
 	
 }

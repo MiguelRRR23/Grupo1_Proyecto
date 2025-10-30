@@ -19,6 +19,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
+import java.awt.Color;
+import javax.swing.ImageIcon;
+import java.awt.Toolkit;
 
 public class V1 extends JFrame implements ActionListener {
 
@@ -61,42 +64,44 @@ public class V1 extends JFrame implements ActionListener {
 	 * Create the frame.
 	 */
 	public V1() {
+		setIconImage(Toolkit.getDefaultToolkit().getImage(V1.class.getResource("/Imagen/Banco.png")));
 		setTitle("BANCO_PRESTAMOS Y CREDITOS");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 916, 533);
 		contentPane = new JPanel();
+		contentPane.setBackground(new Color(128, 128, 255));
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 		
 		lblNewLabel = new JLabel("Nombre y Apellido:");
-		lblNewLabel.setBounds(10, 45, 103, 14);
+		lblNewLabel.setBounds(10, 32, 117, 14);
 		contentPane.add(lblNewLabel);
 		
 		lblNewLabel_1 = new JLabel("DNI:");
-		lblNewLabel_1.setBounds(10, 81, 46, 14);
+		lblNewLabel_1.setBounds(10, 58, 46, 14);
 		contentPane.add(lblNewLabel_1);
 		
 		lblNewLabel_2 = new JLabel("Tipo de cuenta:");
-		lblNewLabel_2.setBounds(10, 125, 103, 14);
+		lblNewLabel_2.setBounds(10, 87, 103, 14);
 		contentPane.add(lblNewLabel_2);
 		
 		lblNewLabel_3 = new JLabel("Cantidad:");
-		lblNewLabel_3.setBounds(10, 185, 88, 14);
+		lblNewLabel_3.setBounds(283, 32, 88, 14);
 		contentPane.add(lblNewLabel_3);
 		
 		txtNom = new JTextField();
-		txtNom.setBounds(108, 42, 86, 20);
+		txtNom.setBounds(119, 29, 86, 20);
 		contentPane.add(txtNom);
 		txtNom.setColumns(10);
 		
 		txtDni = new JTextField();
-		txtDni.setBounds(108, 78, 86, 20);
+		txtDni.setBounds(119, 57, 86, 20);
 		contentPane.add(txtDni);
 		txtDni.setColumns(10);
 		
 		txtCanti = new JTextField();
-		txtCanti.setBounds(108, 182, 86, 20);
+		txtCanti.setBounds(342, 29, 86, 20);
 		contentPane.add(txtCanti);
 		txtCanti.setColumns(10);
 		
@@ -114,28 +119,56 @@ public class V1 extends JFrame implements ActionListener {
 		
 		btnNewButton_1 = new JButton("ADICIONAR");
 		btnNewButton_1.addActionListener(this);
-		btnNewButton_1.setBounds(153, 234, 103, 23);
+		btnNewButton_1.setBounds(119, 234, 103, 23);
 		contentPane.add(btnNewButton_1);
 		
 		btnNewButton_2 = new JButton("BUSCAR");
 		btnNewButton_2.addActionListener(this);
-		btnNewButton_2.setBounds(294, 234, 89, 23);
+		btnNewButton_2.setBounds(232, 234, 89, 23);
 		contentPane.add(btnNewButton_2);
 		
 		btnNewButton_3 = new JButton("ELIMINAR");
 		btnNewButton_3.addActionListener(this);
-		btnNewButton_3.setBounds(405, 234, 89, 23);
+		btnNewButton_3.setBounds(331, 234, 89, 23);
 		contentPane.add(btnNewButton_3);
 		
 		btnNewButton_4 = new JButton("MODIFICAR");
 		btnNewButton_4.addActionListener(this);
-		btnNewButton_4.setBounds(506, 234, 103, 23);
+		btnNewButton_4.setBounds(430, 234, 103, 23);
 		contentPane.add(btnNewButton_4);
 		
 		comboBox = new JComboBox();
-		comboBox.setModel(new DefaultComboBoxModel(new String[] {"   Corriente", "    Credito", "    Ahorro"}));
-		comboBox.setBounds(107, 121, 115, 22);
+		comboBox.setModel(new DefaultComboBoxModel(new String[] {"Corriente", "Credito", "Ahorro"}));
+		comboBox.setBounds(109, 83, 115, 22);
 		contentPane.add(comboBox);
+		
+		lblNewLabel_4 = new JLabel("Plazo");
+		lblNewLabel_4.setBounds(286, 58, 46, 14);
+		contentPane.add(lblNewLabel_4);
+		
+		txtPlazo = new JTextField();
+		txtPlazo.setBounds(342, 55, 86, 20);
+		contentPane.add(txtPlazo);
+		txtPlazo.setColumns(10);
+		
+		lblNewLabel_5 = new JLabel("Tasa anual");
+		lblNewLabel_5.setBounds(270, 87, 78, 14);
+		contentPane.add(lblNewLabel_5);
+		
+		textField = new JTextField();
+		textField.setBounds(342, 86, 86, 20);
+		contentPane.add(textField);
+		textField.setColumns(10);
+		
+		BtnSimular = new JButton("SIMULAR");
+		BtnSimular.addActionListener(this);
+		BtnSimular.setBounds(553, 234, 89, 23);
+		contentPane.add(BtnSimular);
+		
+		btnGuardar = new JButton("GUARDAR");
+		btnGuardar.addActionListener(this);
+		btnGuardar.setBounds(655, 234, 89, 23);
+		contentPane.add(btnGuardar);
 
 	}
 	
@@ -188,15 +221,38 @@ public class V1 extends JFrame implements ActionListener {
 	}
 	
 	OPERAC ae=new OPERAC();
+	private JLabel lblNewLabel_4;
+	private JTextField txtPlazo;
+	private JLabel lblNewLabel_5;
+	private JTextField textField;
+	private JButton BtnSimular;
+	private JButton btnGuardar;
 	
 	void Listado() {
-		Imprimir("DNI\t NOMBRE Y APELLIDO\t TIPO DE CUENTA\t CANTIDAD");
-		for(int i=0; i<ae.Tamaño(); i++) {
-			Imprimir(""+ae.Obtener(i).getDni()+"\t"+ae.Obtener(i).getNom()+"\t\t"+ae.Obtener(i).getTipo()+"\t\t"+ae.Obtener(i).getCanti());
-		}	
+		txtS.setText(""); 
+	    Imprimir("N° CUENTA\tDNI\tNOMBRE CLIENTE\tBANCO\tTIPO CUENTA\tMONTO");
+	    Imprimir("--------------------------------------------------------------------------");
+
+	    for (int i = 0; i < ae.Tamaño(); i++) {
+	        Clase.Cuenta c = ae.Obtener(i);
+	        Imprimir(
+	            c.getNumeroCuenta() + "\t" +
+	            c.getPersona().getDni() + "\t" +
+	            c.getPersona().getNombre() + "\t" +
+	            c.getBanco().getNombreBanco() + "\t" +
+	            c.getTipoCuenta() + "\t" +
+	            "S/ " + String.format("%.2f", c.getMonto())
+	        );
+	    }	
 	}
 
 	public void actionPerformed(ActionEvent e) {
+		if (e.getSource() == btnGuardar) {
+			do_btnNewButton_6_actionPerformed(e);
+		}
+		if (e.getSource() == BtnSimular) {
+			do_btnNewButton_5_actionPerformed(e);
+		}
 		if (e.getSource() == btnNewButton_4) {
 			do_btnNewButton_4_actionPerformed(e);
 		}
@@ -223,100 +279,146 @@ public class V1 extends JFrame implements ActionListener {
 		try {
 	        int dni = leerDNI();
 	        if (dni <= 0) {
-	            JOptionPane.showMessageDialog(this, "El DNI no puede ser negativo.Ingrese nuevamente el DNI.");
-	            return;
-	        }
-	        
-	        String nombre = txtNom.getText().trim();
-	        String cantidadTxt = txtCanti.getText().trim();
-	        if (txtNom.getText().trim().isEmpty() ||  
-	            txtCanti.getText().trim().isEmpty()) {
-	            JOptionPane.showMessageDialog(this, "Complete todos los campos antes de adicionar.");
-	            return;
-	        }
-	        if (nombre.matches("\\d+")) {
-	            JOptionPane.showMessageDialog(this, "El campo Nombre y Apellido no puede contener solo números.");
-	            return;
-	        }
-	        if (!cantidadTxt.matches("\\d+(\\.\\d+)?")) { 
-	            JOptionPane.showMessageDialog(this, "La cantidad solo puede contener números.");
+	            JOptionPane.showMessageDialog(this, "El DNI no puede ser negativo. Ingrese nuevamente el DNI.");
 	            return;
 	        }
 
-	        Banco es = ae.Buscar(dni);
-	        if (es == null) {
-	        	String tipo = comboBox.getSelectedItem().toString();
-	        	Banco e1 = new Banco(dni, leerNomApell(), leerTipo(), LeerCanti());
-	            ae.Adicionar(e1);
-	        } else {
-	            JOptionPane.showMessageDialog(this, "Este registro ya existe. Ingrese uno nuevo.");
+	        String nombre = leerNomApell();
+	        if (nombre == null) return;
+
+	        double monto = LeerCanti();
+	        if (monto <= 0) {
+	            JOptionPane.showMessageDialog(this, "La cantidad debe ser mayor que cero.");
+	            return;
 	        }
+
+	        String tipo = leerTipo();
+
+	       
+	        Clase.Persona persona = new Clase.Persona(dni, nombre, "", "Sin dirección", "Sin teléfono", "Sin correo");
+	        Clase.Banco banco = new Clase.Banco(1, "Scotiabank Perú S.A.A.", "Av. Canaval y Moreyra 522", "Lima", "013122222", "20100105939", "Carlos Ramos");
+
+	        
+	        String numeroCuenta = "CT-" + dni;
+
+	        
+	        Clase.Cuenta cuentaExistente = ae.BuscarPorDni(dni);
+	        if (cuentaExistente == null) {
+	            Clase.Cuenta nuevaCuenta = new Clase.Cuenta(numeroCuenta, persona, banco, tipo, monto);
+	            ae.Adicionar(nuevaCuenta);
+	            JOptionPane.showMessageDialog(this, "Cuenta creada correctamente en Scotiabank.");
+	        } else {
+	            JOptionPane.showMessageDialog(this, "Ya existe una cuenta registrada con este DNI.");
+	        }
+
 	    } catch (NumberFormatException ex) {
-	        JOptionPane.showMessageDialog(this, "DNI debe ser un número válido.");
+	        JOptionPane.showMessageDialog(this, "Verifique los datos ingresados.");
 	    }
 	}
 	
 	
 	protected void do_btnNewButton_2_actionPerformed(ActionEvent e) {
-txtS.setText("");
-		
-		Banco es = null;
+		txtS.setText("");
 
-        if (!txtDni.getText().isEmpty() && leerDNI() != -1) {
-            es = ae.Buscar(leerDNI()); 
-        } else if (!leerNomApell().isEmpty()) {
-            es = ae.Buscar(leerNomApell()); 
-        }
-			if(es!=null) {
-				Imprimir("DNI\t NOMBRE Y APELLIDO\t TIPO DE CUENTA\t CANTIDAD");
-				Imprimir(""+es.getDni()+"\t"+es.getNom()+"\t\t"+es.getTipo()+"\t\t"+es.getCanti());
-			}
-		else JOptionPane.showMessageDialog(this, "No extiste este registro. Ingrese de nuevo");
-		
+	    Clase.Cuenta cuenta = null;
+
+	    if (!txtDni.getText().trim().isEmpty()) {
+	        cuenta = ae.BuscarPorDni(leerDNI());
+	    } else if (!txtNom.getText().trim().isEmpty()) {
+	        cuenta = ae.BuscarPorNombre(leerNomApell());
+	    }
+
+	    if (cuenta != null) {
+	        txtS.append("N° Cuenta\tDNI\tCliente\tTipo\tMonto\n");
+	        txtS.append("--------------------------------------------------\n");
+	        txtS.append(cuenta.getNumeroCuenta() + "\t" +
+	                    cuenta.getPersona().getDni() + "\t" +
+	                    cuenta.getPersona().getNombre() + "\t" +
+	                    cuenta.getTipoCuenta() + "\tS/ " + cuenta.getMonto() + "\n");
+	    } else {
+	        JOptionPane.showMessageDialog(this, "No existe el registro.");
+	    }
 		
 	}
 	
 
 	protected void do_btnNewButton_3_actionPerformed(ActionEvent e) {
 		boolean eliminado = false;
-
-	    if (!txtDni.getText().isEmpty() && leerDNI() != -1) {
-	        ae.Eliminar(leerDNI()); 
-	        eliminado = true;
-	    } 
-	   
-	    else if (!leerNomApell().isEmpty()) {
-	        ae.Eliminar(leerNomApell()); 
-	        eliminado = true;
+	    if (!txtDni.getText().trim().isEmpty()) {
+	        Clase.Cuenta c = ae.BuscarPorDni(leerDNI());
+	        if (c != null) {
+	            ae.Eliminar(c.getNumeroCuenta());
+	            eliminado = true;
+	        }
+	    } else if (!txtNom.getText().trim().isEmpty()) {
+	        Clase.Cuenta c = ae.BuscarPorNombre(leerNomApell());
+	        if (c != null) {
+	            ae.Eliminar(c.getNumeroCuenta());
+	            eliminado = true;
+	        }
 	    }
 
-	    if (eliminado) {
-	        JOptionPane.showMessageDialog(this,"El registro fue eliminado correctamente.");
-	    } else {
-	        JOptionPane.showMessageDialog(this,"No existe el registro a eliminar.");
-	    }
+	    if (eliminado)
+	        JOptionPane.showMessageDialog(this, "Registro eliminado correctamente.");
+	    else
+	        JOptionPane.showMessageDialog(this, "No existe el registro a eliminar.");
 	}
 	
 	
 	protected void do_btnNewButton_4_actionPerformed(ActionEvent e) {
 		txtS.setText("");
-		 Banco es = null;
+		Clase.Cuenta c = null;
 
-		    if (!txtDni.getText().isEmpty() && leerDNI() != -1) {
-		        es = ae.Buscar(leerDNI()); 
-		    } else if (!leerNomApell().isEmpty()) {
-		        es = ae.Buscar(leerNomApell()); 
-		    }
+	    if (!txtDni.getText().trim().isEmpty()) {
+	        c = ae.BuscarPorDni(leerDNI());
+	    } else if (!txtNom.getText().trim().isEmpty()) {
+	        c = ae.BuscarPorNombre(leerNomApell());
+	    }
 
-		    if (es != null) {
-		      
-		        es.setNom(leerNomApell());
-		        es.setTipo(comboBox.getSelectedItem().toString());
-		        es.setCanti(LeerCanti());
+	    if (c != null) {
+	        c.setTipoCuenta(leerTipo());
+	        c.setMonto(LeerCanti());
+	        JOptionPane.showMessageDialog(this, "Cuenta modificada correctamente.");
+	    } else {
+	        JOptionPane.showMessageDialog(this, "No se encontró la cuenta para modificar.");
+	    }
+	}
+///Boton simular
+	protected void do_btnNewButton_5_actionPerformed(ActionEvent e)   {
+		
+		try {
+	        
+	        double monto = Double.parseDouble(txtCanti.getText());
+	        int plazo = Integer.parseInt(txtPlazo.getText());
+	        double tasaAnual = Double.parseDouble(textField.getText());
 
-		        JOptionPane.showMessageDialog(this, "Registro modificado correctamente.");
-		    } else {
-		        JOptionPane.showMessageDialog(this, "No existe el registro a modificar.");
+	        
+	        double tasaMensual = tasaAnual / 12 / 100;
+
+	      
+	        double cuota = (monto * tasaMensual) / (1 - Math.pow(1 + tasaMensual, -plazo));
+
+	        txtS.setText("");
+	        txtS.append("Monto Solicitado: S/ " + monto + "\n");
+	        txtS.append("Plazo: " + plazo + " meses\n");
+	        txtS.append("Tasa Anual: " + tasaAnual + "%\n");
+	        txtS.append("Cuota Mensual: S/ " + String.format("%.2f", cuota) + "\n");
+	        txtS.append("Total a pagar: S/ " + String.format("%.2f", (cuota * plazo)) + "\n");
+	        txtS.append("Intereses Totales: S/ " + String.format("%.2f", (cuota * plazo) - monto) + "\n");
+
+	    } catch (Exception ex) {
+	        JOptionPane.showMessageDialog(this, "Verifique los campos de simulación.");
+	    }
+		
+	}
+	///Boton Guardar
+	protected void do_btnNewButton_6_actionPerformed(ActionEvent e) {
+		 try {
+		        ae.GuardarArchivo();
+		        JOptionPane.showMessageDialog(this, "Registros guardados correctamente en el archivo.");
+		    } catch (Exception ex) {
+		        JOptionPane.showMessageDialog(this, "Error al guardar archivo.");
 		    }
 	}
+	
 }

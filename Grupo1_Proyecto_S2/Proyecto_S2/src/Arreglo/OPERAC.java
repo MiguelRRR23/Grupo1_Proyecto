@@ -1,72 +1,58 @@
 package Arreglo;
 
 import java.util.ArrayList;
-
-import Clase.Banco;
+import Clase.*;
 
 public class OPERAC {
-private ArrayList<Banco>banc;
-public OPERAC() {
-	banc=new ArrayList<Banco>();
-	Adicionar(new Banco(12345678, "Marcos estrada", "credito", 3000));
-	Adicionar(new Banco(123456789, "Marquito Inga", "creditos", 5000));
-	Adicionar(new Banco(12345675, "Carlos estra", "creditoss", 5000));
-}
-public void Adicionar(Banco x) {
-	
-	banc.add(x);
-}
+    private ArrayList<Cuenta> cuentas;
+    private ArchivoCuenta archivo;
 
-public void Adicionar(int dni, String nom, String tipo, double canti) {
-    Banco b = new Banco(dni, nom, tipo, canti);
-    banc.add(b);
-}
-
-
-
-public Banco Obtener(int x) {
-	return banc.get(x);
-	
-}
-public int Tamaño() {
-	return banc.size();
-}
-
-public Banco Buscar(int dni) {
-	for(int i=0;i<Tamaño(); i++){
-		if(Obtener(i).getDni()==dni) return Obtener(i);
-	}
-	return null;
-}
-public Banco Buscar(String nom) {
-    for (Banco b : banc) {
-        if (b.getNom().equalsIgnoreCase(nom)) return b;
+    public OPERAC() {
+    	archivo = new ArchivoCuenta();
+        cuentas = archivo.cargar(); 
     }
-    return null;
-}
 
-public Banco Buscar(String nom, String tipo) {
-	for (Banco b : banc) {
-        if (b.getNom().equalsIgnoreCase(nom)) {
-            return b;
+    public void Adicionar(Cuenta c) {
+        cuentas.add(c);
+        archivo.guardar(cuentas);
+    }
+
+    public Cuenta Obtener(int i) {
+        return cuentas.get(i);
+    }
+
+    public int Tamaño() {
+        return cuentas.size();
+    }
+
+    public Cuenta BuscarPorNumero(String numero) {
+        for (Cuenta c : cuentas) {
+            if (c.getNumeroCuenta().equalsIgnoreCase(numero)) return c;
         }
+        return null;
     }
-    return null;
-}
 
+    public Cuenta BuscarPorDni(int dni) {
+        for (Cuenta c : cuentas) {
+            if (c.getPersona().getDni() == dni) return c;
+        }
+        return null;
+    }
 
+    public Cuenta BuscarPorNombre(String nombre) {
+        for (Cuenta c : cuentas) {
+            if (c.getPersona().getNombre().equalsIgnoreCase(nombre)) return c;
+        }
+        return null;
+    }
 
-public void Eliminar (Banco x) {
-	banc.remove(x);
-}
-public void Eliminar(int dni) {
-    Banco b = Buscar(dni);
-    if (b != null) banc.remove(b);
-}
-
-public void Eliminar(String nom) {
-    Banco b = Buscar(nom);
-    if (b != null) banc.remove(b);
-}
-
+    public void Eliminar(String numeroCuenta) {
+        Cuenta c = BuscarPorNumero(numeroCuenta);
+        if (c != null) cuentas.remove(c);
+        archivo.guardar(cuentas);
+    }
+    
+    public void GuardarArchivo() {
+        archivo.guardar(cuentas);
+    }
 }
