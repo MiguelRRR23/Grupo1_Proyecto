@@ -1,0 +1,3 @@
+gustavo;123456789;ADMIN
+hola;hola;EMPLEADO
+hola;123456;EMPLEADO

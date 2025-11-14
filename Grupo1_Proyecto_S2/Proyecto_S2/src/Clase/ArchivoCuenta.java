@@ -5,7 +5,7 @@ import java.util.ArrayList;
 
 public class ArchivoCuenta {
 
-    private String ruta = "C:\\Users\\User\\Desktop\\Nueva carpeta (4)\\Grupo1_Proyecto\\Grupo1_Proyecto_S2\\Proyecto_S2\\src\\Data\\cuentas.txt";
+    private String ruta = "C:\\Users\\User\\Desktop\\PROYECTO22\\Grupo1_Proyecto\\Grupo1_Proyecto_S2\\Proyecto_S2\\src\\Data\\cuentas.txt";
 
   
     public void guardar(ArrayList<Cuenta> lista) {

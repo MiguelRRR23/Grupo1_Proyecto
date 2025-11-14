@@ -383,7 +383,7 @@ public class V1 extends JFrame implements ActionListener {
 	        JOptionPane.showMessageDialog(this, "No se encontró la cuenta para modificar.");
 	    }
 	}
-///Boton simular
+
 	protected void do_btnNewButton_5_actionPerformed(ActionEvent e)   {
 		
 		try {
@@ -411,7 +411,7 @@ public class V1 extends JFrame implements ActionListener {
 	    }
 		
 	}
-	///Boton Guardar
+
 	protected void do_btnNewButton_6_actionPerformed(ActionEvent e) {
 		 try {
 		        ae.GuardarArchivo();
