@@ -5,16 +5,13 @@ import Clase.*;
 
 public class OPERAC {
     private ArrayList<Cuenta> cuentas;
-    private ArchivoCuenta archivo;
+   
 
-    public OPERAC() {
-    	archivo = new ArchivoCuenta();
-        cuentas = archivo.cargar(); 
-    }
+   
 
     public void Adicionar(Cuenta c) {
         cuentas.add(c);
-        archivo.guardar(cuentas);
+       
     }
 
     public Cuenta Obtener(int i) {
@@ -49,10 +46,8 @@ public class OPERAC {
     public void Eliminar(String numeroCuenta) {
         Cuenta c = BuscarPorNumero(numeroCuenta);
         if (c != null) cuentas.remove(c);
-        archivo.guardar(cuentas);
+        
     }
     
-    public void GuardarArchivo() {
-        archivo.guardar(cuentas);
-    }
+   
 }

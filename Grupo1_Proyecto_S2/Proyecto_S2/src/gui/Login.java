@@ -14,6 +14,11 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.awt.event.ActionEvent;
 import javax.swing.JPasswordField;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import Arreglo.conexionMysql;
+
 
 public class Login extends JFrame implements ActionListener {
 
@@ -89,29 +94,20 @@ public class Login extends JFrame implements ActionListener {
 
     private boolean validarUsuario(String usuario, String clave) {
         try {
-            BufferedReader br = new BufferedReader(new FileReader("C:\\Users\\User\\Desktop\\PROYECTO22\\Grupo1_Proyecto\\Grupo1_Proyecto_S2\\Proyecto_S2\\src\\Data\\usuarios.txt"));
-            String linea;
+            Connection cx = conexionMysql.getConexion();
+            PreparedStatement ps = cx.prepareStatement(
+                "SELECT * FROM usuarios WHERE usuario=? AND clave=?"
+            );
+            ps.setString(1, usuario);
+            ps.setString(2, clave);
 
-            while ((linea = br.readLine()) != null) {
-                String[] partes = linea.split(";");
+            ResultSet rs = ps.executeQuery();
 
-                if (partes.length == 3) {
-                    String u = partes[0];
-                    String c = partes[1];
-
-                    if (u.equals(usuario) && c.equals(clave)) {
-                        br.close();
-                        return true;
-                    }
-                }
-            }
-
-            br.close();
+            return rs.next();
 
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Error al leer usuarios.txt");
+            JOptionPane.showMessageDialog(this, "Error BD: " + e.getMessage());
         }
-
         return false;
     }
 
@@ -151,4 +147,6 @@ public class Login extends JFrame implements ActionListener {
             JOptionPane.showMessageDialog(this, "Usuario o clave incorrectos.");
         }
     }
+    
+    
 }

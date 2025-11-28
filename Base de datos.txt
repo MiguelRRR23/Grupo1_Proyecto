@@ -1,0 +1,155 @@
+CREATE DATABASE scotiabank_db;
+USE scotiabank_db;
+
+CREATE TABLE usuarios (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario VARCHAR(50) UNIQUE,
+    clave VARCHAR(100),
+    rol VARCHAR(20)
+);
+CREATE TABLE personas (
+    DNI INT PRIMARY KEY,
+    NOMBRE VARCHAR(100),
+    APELLIDO VARCHAR(100),
+    DIRECCION VARCHAR(150),
+    TELEFONO VARCHAR(20),
+    EMAIL VARCHAR(100)
+);
+INSERT INTO personas (dni, nombre, apellido, direccion, telefono, email) VALUES
+(74125896, 'Marcos', 'Estrada', 'Av. Primavera 123 - Surco', '987654321', 'marcos.estrada@gmail.com'),
+(75648912, 'Claudia', 'Rivas', 'Jr. Las Flores 560 - San Borja', '912345678', 'claudia.rivas@gmail.com'),
+(70894512, 'Carlos', 'Inga', 'Av. San Luis 340 - La Victoria', '999874512', 'carlos.inga@hotmail.com'),
+(71458963, 'María', 'Valverde', 'Calle Los Jazmines 450 - Miraflores', '945612378', 'maria.valverde@gmail.com'),
+(72589641, 'Julio', 'Mendoza', 'Pasaje Roma 208 - San Miguel', '934567821', 'julio.mendoza@gmail.com'),
+(73214598, 'Daniela', 'Soto', 'Av. Javier Prado 1500 - San Isidro', '912478563', 'daniela.soto@gmail.com'),
+(70123458, 'Jorge', 'Pérez', 'Jr. Libertad 234 - Lince', '987321456', 'jorge.perez@gmail.com'),
+(74561239, 'Rocío', 'Ramos', 'Av. Canadá 980 - La Victoria', '945781236', 'rocio.ramos@gmail.com'),
+(75231498, 'Raúl', 'Cárdenas', 'Calle Arica 221 - Magdalena', '901234567', 'raul.cardenas@gmail.com'),
+(70987412, 'Patricia', 'Quispe', 'Av. Arequipa 3050 - Miraflores', '978456231', 'patricia.quispe@gmail.com');
+
+create procedure sp_Listar()
+select * from personas;
+
+call sp_Listar();
+
+create procedure sp_Insertar(
+	dni INT,
+    nombre VARCHAR(100),
+    apellido VARCHAR(100),
+    direccion VARCHAR(150),
+    telefono VARCHAR(20),
+    email VARCHAR(100)
+)
+insert into personas values(dni,nombre,apellido,direccion,telefono,email);
+call sp_Insertar(74484741, 'Gustavo', 'Trujillo', 'Av. Brasil 123 - san Borja', '923923050', 'trujillo.casana@gmail.com');
+call sp_Listar();
+
+create procedure sp_Eliminar(
+dni_ELIMINAR INT)
+delete from personas where DNI=dni_ELIMINAR;
+
+CALL sp_Eliminar(74484741);
+call sp_Listar();
+
+create procedure sp_Editar(
+	dni_editar INT,
+    nombre_editar VARCHAR(100),
+    apellido_editar VARCHAR(100),
+    direccion_editar VARCHAR(150),
+    telefono_editar VARCHAR(20),
+    email_editar VARCHAR(100))
+update personas set DNI=dni_editar,NOMBRE=nombre_editar,APELLIDO=apellido_editar,DIRECCION=direccion_editar,TELEFONO=telefono_editar,EMAIL=email_editar
+where  DNI=dni_editar;
+
+call sp_Editar(74484741, 'GUSTAVO', 'Trujillo', 'Av. Brasil 123 - san Borja', '923923050', 'trujillo.casana@gmail.com');
+call sp_Listar();
+
+create procedure sp_ConsultarDNI(
+dni_consultar INT)
+select * from personas where DNI=dni_consultar;
+
+call sp_ConsultarDNI(74484741);
+
+-------
+-------
+-------
+
+CREATE TABLE cuentas (
+    numero_cuenta VARCHAR(20) PRIMARY KEY,
+    dni INT,
+    tipo_cuenta VARCHAR(30),
+    monto DECIMAL(10,2),
+    banco VARCHAR(100),
+    FOREIGN KEY (dni) REFERENCES personas(dni)
+);
+INSERT INTO cuentas (numero_cuenta, dni, tipo_cuenta, monto, banco) VALUES
+('CT-74125896', 74125896, 'Ahorro', 3500.50, 'Scotiabank'),
+('CT-75648912', 75648912, 'Corriente', 1200.00, 'Scotiabank'),
+('CT-70894512', 70894512, 'Credito', 8500.00, 'Scotiabank'),
+('CT-71458963', 71458963, 'Ahorro', 950.20, 'Scotiabank'),
+('CT-72589641', 72589641, 'Corriente', 4500.00, 'Scotiabank'),
+('CT-73214598', 73214598, 'Credito', 15000.00, 'Scotiabank'),
+('CT-70123458', 70123458, 'Ahorro', 780.00, 'Scotiabank'),
+('CT-74561239', 74561239, 'Corriente', 2600.75, 'Scotiabank'),
+('CT-75231498', 75231498, 'Credito', 5000.00, 'Scotiabank'),
+('CT-70987412', 70987412, 'Ahorro', 1200.00, 'Scotiabank');
+
+
+CREATE PROCEDURE sp_ListarCuentas()
+SELECT 
+    c.numero_cuenta,
+    c.dni,
+    p.NOMBRE AS nombre,
+    p.APELLIDO AS apellido,
+    c.tipo_cuenta,
+    c.monto,
+    c.banco
+FROM cuentas c
+INNER JOIN personas p ON c.dni = p.DNI;
+
+
+CREATE PROCEDURE sp_BuscarCuentaDNI(IN dni_buscar INT)
+SELECT 
+    c.numero_cuenta,
+    c.dni,
+    p.NOMBRE AS nombre,
+    p.APELLIDO AS apellido,
+    c.tipo_cuenta,
+    c.monto,
+    c.banco
+FROM cuentas c
+INNER JOIN personas p ON c.dni = p.DNI
+WHERE c.dni = dni_buscar;
+
+
+CREATE PROCEDURE sp_InsertarCuenta(
+    IN num VARCHAR(20),
+    IN dni_cliente INT,
+    IN tipo VARCHAR(30),
+    IN monto DECIMAL(10,2),
+    IN banco VARCHAR(100)
+)
+INSERT INTO cuentas VALUES (num, dni_cliente, tipo, monto, banco);
+
+
+CREATE PROCEDURE sp_ModificarCuenta(
+    IN num VARCHAR(20),
+    IN tipo VARCHAR(30),
+    IN monto DECIMAL(10,2)
+)
+UPDATE cuentas 
+SET tipo_cuenta = tipo,
+    monto = monto
+WHERE numero_cuenta = num;
+
+
+CREATE PROCEDURE sp_EliminarCuenta(IN cuenta VARCHAR(20))
+DELETE FROM cuentas WHERE numero_cuenta = cuenta;
+
+INSERT INTO usuarios (usuario, clave, rol) VALUES
+('admin', '1234', 'ADMIN'),
+('empleado1', '1234', 'EMPLEADO');
+
+SELECT * FROM cuentas;
+SELECT * FROM usuarios;
+CALL sp_ListarCuentas();

@@ -3,8 +3,11 @@ package gui;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.event.*;
-import java.io.FileWriter;
-import java.io.PrintWriter;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+
+import Arreglo.conexionMysql; 
 
 public class Registrar extends JFrame implements ActionListener {
 
@@ -49,8 +52,7 @@ public class Registrar extends JFrame implements ActionListener {
         lblRol.setBounds(40, 140, 100, 20);
         contentPane.add(lblRol);
 
-        cbRol = new JComboBox<>(new String[] {"ADMIN", "EMPLEADO"});
-        cbRol.setModel(new DefaultComboBoxModel(new String[] {"EMPLEADO", "ADMIN"}));
+        cbRol = new JComboBox<>(new String[] {"EMPLEADO", "ADMIN"});
         cbRol.setBounds(140, 140, 200, 20);
         contentPane.add(cbRol);
 
@@ -76,20 +78,35 @@ public class Registrar extends JFrame implements ActionListener {
             return;
         }
 
+        Connection cn = null;
+        PreparedStatement ps = null;
+
         try {
-            FileWriter fw = new FileWriter("C:\\\\Users\\\\User\\\\Desktop\\\\PROYECTO22\\\\Grupo1_Proyecto\\\\Grupo1_Proyecto_S2\\\\Proyecto_S2\\\\src\\\\Data\\\\usuarios.txt", true);
-            PrintWriter pw = new PrintWriter(fw);
+            cn = conexionMysql.getConexion();
+            if (cn == null) {
+                JOptionPane.showMessageDialog(this, "No hay conexión con la base de datos.");
+                return;
+            }
 
-            pw.println(usuario + ";" + clave + ";" + rol);
-            pw.close();
-            fw.close();
+            
+            String sqlInsert = "INSERT INTO usuarios (usuario, clave, rol) VALUES (?,?,?)";
+            ps = cn.prepareStatement(sqlInsert);
+            ps.setString(1, usuario);
+            ps.setString(2, clave);   
+            ps.setString(3, rol);
 
-            JOptionPane.showMessageDialog(this, "Usuario registrado correctamente.");
+            ps.executeUpdate();
+
+            JOptionPane.showMessageDialog(this, "Usuario guardado correctamente en la base de datos.");
             this.dispose();
 
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Error al guardar usuario.");
+            JOptionPane.showMessageDialog(this, "Error al registrar usuario: " + ex.getMessage());
+        } finally {
+            try {
+                if (ps != null) ps.close();
+                if (cn != null) cn.close();
+            } catch (Exception ex2) {}
         }
     }
 }
-
