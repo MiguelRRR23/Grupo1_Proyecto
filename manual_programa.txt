@@ -1,0 +1,245 @@
+MANUAL DEL SISTEMA DE GESTIÓN DE CUENTAS Y PRÉSTAMOS
+====================================================
+
+Este documento describe el funcionamiento general de la aplicación de
+gestión de cuentas y préstamos del **Banco Scotiabank**.  La
+aplicación permite al personal empleado y a los administradores
+gestionar información de clientes, evaluar la capacidad de pago de un
+préstamo, registrar nuevas cuentas, modificarlas o eliminarlas,
+simular los pagos y, en el caso del administrador, administrar las
+cuentas de usuario (empleados y administradores) y asignar los
+turnos de trabajo para los empleados.
+
+1. Ingreso al sistema
+---------------------
+
+Al iniciar la aplicación se presenta una ventana de **login** en la
+que debe introducirse un nombre de usuario y una contraseña.  Según
+el rol asignado en la base de datos (`ADMIN` o `EMPLEADO`) se abrirá
+la ventana correspondiente:
+
+* **Empleado** – muestra la ventana `V1` con las opciones de gestión
+  de cuentas, simulación y evaluación de préstamos.  El empleado
+  puede crear, modificar o eliminar cuentas, evaluar la capacidad de
+  pago de un cliente y simular el monto de las cuotas.
+* **Administrador** – muestra la ventana `AdminV1`, similar a la de
+  empleado pero con un panel adicional para la gestión de usuarios
+  (agregar, eliminar y listar empleados/administradores) y un botón
+  para listar los préstamos registrados.
+
+En cualquier ventana (excepto en el login) hay una barra de menú en
+la parte superior con la opción **Cuenta → Cerrar sesión**, la cual
+retorna a la pantalla de login.  La interfaz utiliza un tono rojo
+suave (`#ed3729`) con botones de un tono ligeramente más oscuro para
+ofrecer un aspecto profesional acorde a la identidad visual de
+Scotiabank.  Se muestra el logotipo del banco en horizontal en la
+parte superior de cada ventana para evitar que se superponga con
+otros controles.
+
+2. Gestión de cuentas y préstamos (ventanas V1 y AdminV1)
+---------------------------------------------------------
+
+La interfaz principal se divide en varias secciones bien definidas:
+
+### 2.1 Datos del cliente
+
+En esta sección se recogen los datos personales del cliente que
+solicita una cuenta o un préstamo:
+
+* **Nombre y Apellido** – caja de texto donde se consigna el nombre
+  completo del cliente.
+* **DNI** – identificación numérica (Documento Nacional de
+  Identidad).  El sistema valida que se introduzca un número
+  positivo.
+* **Dirección** – dirección del domicilio del cliente.
+* **Teléfono** – número de contacto.
+* **Email** – dirección de correo electrónico del cliente.
+* **Tipo de cuenta** – desplegable para seleccionar entre *Corriente*,
+  *Crédito* o *Ahorro*.  Aunque todas las cuentas pertenezcan a
+  Scotiabank, el tipo sirve para clasificar el producto financiero.
+
+### 2.2 Datos del préstamo
+
+Estos campos describen la solicitud de crédito que se desea
+registrar:
+
+* **Cantidad** – monto del préstamo solicitado.
+* **Plazo (meses)** – número de cuotas mensuales para devolver el
+  préstamo.  Este valor se almacena como *num_cuotas* en la base de
+  datos.  La fecha final del pago se calcula automáticamente al
+  sumar el plazo a la fecha de inicio.
+* **Tasa anual (%)** – tasa de interés anual utilizada en la
+  simulación de pagos.
+
+### 2.3 Evaluación del préstamo
+
+La sección de evaluación recopila información adicional necesaria
+para decidir si el préstamo es viable:
+
+* **Ingresos Mensuales (S/)** – ingresos netos del cliente.
+* **Motivo del préstamo** – texto libre que describe el propósito del
+  crédito (por ejemplo, compra de vehículo, estudios, negocio, etc.).
+* **Fecha inicio pago (YYYY‑MM‑DD)** – fecha en la que el cliente
+  empezará a pagar el préstamo.  A partir de esta fecha y del plazo
+  se calcula automáticamente la **fecha final de pago**.
+
+### 2.4 Área de resultados
+
+Un área de texto muestra los reportes y resultados de las acciones
+realizadas: listados de cuentas o préstamos, resultados de
+simulaciones o evaluaciones, etc.  Para los administradores, los
+reportes de préstamos incluyen una columna con el nombre de usuario
+o el identificador del empleado que registró el préstamo.
+
+### 2.5 Botones de acción
+
+* **REPORTAR** – muestra todas las cuentas registradas.  La tabla
+  presenta las columnas: número de cuenta, DNI, nombre del cliente,
+  tipo de cuenta, monto, número de cuotas, fecha de inicio y fecha de
+  fin del préstamo.  La columna del banco se omite porque todas las
+  cuentas pertenecen a Scotiabank.
+* **ADICIONAR** – registra una nueva cuenta.  Primero se valida el
+  DNI y el nombre del cliente.  Si la persona no existe en la tabla
+  `personas`, se crea un nuevo registro con los datos ingresados
+  (incluyendo dirección, teléfono y email).  Luego se construye el
+  número de cuenta (`CT-<dni>`), se calcula la fecha final sumando el
+  plazo al inicio y se inserta el registro en la tabla `cuentas`.
+  Paralelamente se crea un registro en la tabla `prestamos` para
+  reflejar la relación entre el cliente, la cuenta y el usuario que
+  realiza la operación.  El identificador del usuario se obtiene de
+  `Login.currentUserId`.
+* **BUSCAR** – recupera una cuenta por DNI y muestra sus datos en el
+  área de resultados.
+* **ELIMINAR** – elimina la cuenta correspondiente al DNI ingresado.
+* **MODIFICAR** – actualiza los datos de una cuenta existente.  Se
+  pueden cambiar el nombre del cliente, el tipo de cuenta, el monto,
+  el número de cuotas y las fechas de inicio y fin de pago.  La
+  fecha final se recalcula automáticamente sumando las cuotas al
+  nuevo inicio.
+* **SIMULAR/EVALUAR** – combina la simulación y la evaluación en un
+  único botón.  Al presionarlo, se divide el monto solicitado entre
+  el número de cuotas para obtener la cuota mensual **sin intereses**
+  y se compara con el 35 % de los ingresos mensuales.  Si ese
+  porcentaje cubre la cuota mensual, el cliente es **apto y
+  aprobado**.  En ese caso se ejecuta también la simulación de pago
+  con intereses (usando la tasa anual indicada), se calcula la cuota
+  mensual con intereses, el total a pagar y los intereses totales, y
+  se muestran la fecha de inicio y la fecha final de pago.  Si el
+  cliente no cumple con esta capacidad, se indica el motivo y se
+  calcula un crédito alternativo igual al 35 % de los ingresos
+  multiplicado por el plazo.
+
+3. Funcionalidades exclusivas del administrador
+----------------------------------------------
+
+Además de las funciones descritas anteriormente, la ventana del
+administrador incluye un panel de **Gestión de Usuarios** que
+integra todas las operaciones relacionadas con las cuentas de acceso
+al sistema:
+
+* **AGREGAR** – registrar una nueva cuenta de usuario (empleado o
+  administrador) indicando un nombre de usuario, una clave y el rol.
+  Si se elige el rol **EMPLEADO**, se debe seleccionar un turno en
+  el combo de horarios.  Los turnos se cargan desde la tabla
+  `horarios` y representan los días y horas de trabajo (por ejemplo,
+  “Lunes a Viernes 08:00‑16:00”).  Para un administrador, el campo de
+  horario se desactiva automáticamente.
+* **ELIMINAR** – suprime una cuenta de usuario por su nombre.
+  No puede eliminarse la cuenta principal de administrador.
+* **LISTAR** – muestra en el área inferior la lista de usuarios
+  existentes con su identificador (`id_usuario`), nombre de usuario,
+  contraseña, rol y, si aplica, el turno asignado (identificador,
+  días y horario).  Esto se obtiene mediante el procedimiento
+  almacenado `sp_ListarUsuarios()` que une `usuarios` e `horarios`.
+* **LISTAR PRÉSTAMOS** – en la versión administrador, este botón
+  recupera todos los registros de la tabla `prestamos` y los muestra
+  en el área de resultados.  Cada línea incluye el identificador del
+  préstamo, el DNI del cliente, el usuario que gestionó el préstamo,
+  la cuenta asociada, el monto, el número de cuotas, la tasa anual,
+  las fechas de inicio y fin y el estado.  Esta funcionalidad
+  permite al supervisor revisar rápidamente el portafolio de préstamos
+  activos.
+
+4. Estructura de la base de datos
+---------------------------------
+
+El sistema utiliza una base de datos MySQL denominada `scotiabank_db`.
+Se gestionan las siguientes tablas principales:
+
+* **personas** – contiene la información básica de los clientes
+  (`dni`, `nombre`, `apellido`, `direccion`, `telefono` y `email`).  Un
+  cliente puede tener muchas cuentas y muchos préstamos asociados.
+
+* **horarios** – define los turnos disponibles para los empleados.
+  Cada registro incluye un identificador (`id_turno`), los días de
+  trabajo (por ejemplo, “Lunes a Viernes”) y el intervalo horario
+  (por ejemplo, “08:00‑16:00”).  Esta tabla se enlaza con `usuarios`
+  mediante la columna `id_turno` y permite asignar un horario a cada
+  empleado.
+
+* **usuarios** – gestiona las cuentas de acceso a la aplicación.
+  Cada registro contiene un identificador (`id_usuario`), un nombre
+  de usuario, una contraseña (`clave`), un rol (`EMPLEADO` o
+  `ADMIN`) y, en caso de empleados, el identificador de turno
+  (`id_turno`).  La columna `id_turno` es una clave foránea que
+  referencia a `horarios(id_turno)` y puede ser NULL para los
+  administradores.  Los asesores de crédito no se almacenan en una
+  tabla aparte: todos los empleados son usuarios del sistema.
+
+* **cuentas** – registra las cuentas asociadas a los clientes.
+  Cada registro incluye el número de cuenta (`numero_cuenta`), el DNI
+  del cliente (`dni`), el tipo de cuenta, el monto, el número de
+  cuotas, la fecha de inicio y la fecha de fin del préstamo.  La
+  columna de banco se eliminó porque todas las cuentas pertenecen a
+  Scotiabank.
+
+* **prestamos** – representa los préstamos otorgados a los clientes.
+  Vincula a un cliente (`dni`), a un usuario que gestionó el
+  préstamo (`id_usuario`) y a una cuenta (`numero_cuenta`).  Contiene
+  también el monto solicitado, el número de cuotas, la tasa anual,
+  las fechas de inicio y fin, el estado del préstamo (APROBADO,
+  RECHAZADO, etc.), el motivo y los ingresos mensuales usados en la
+  evaluación.  Estas columnas establecen la relación de
+  muchos‑a‑muchos entre clientes y usuarios (empleados) sin necesidad
+  de una tabla intermedia.
+
+La siguiente imagen muestra un diagrama simplificado de las
+relaciones entre las tablas principales del sistema.  Un cliente
+puede tener muchas cuentas y muchos préstamos; un empleado (usuario)
+puede gestionar muchos préstamos; un horario puede asignarse a
+muchos usuarios; y cada préstamo se asocia tanto a un cliente como
+a un usuario y a una cuenta:
+
+```
+Diagrama ER: ver el archivo er_diagram_actualizado.png incluido en el proyecto.
+```
+
+5. Buenas prácticas implementadas
+---------------------------------
+
+* **Validación de datos** – se controla que el DNI y el monto sean
+  valores numéricos positivos, que la fecha tenga formato
+  `YYYY‑MM‑DD` y que los campos obligatorios no estén vacíos.  Se
+  realiza una conversión de los valores ingresados y se notifican
+  errores mediante cuadros de diálogo.
+* **Separación de responsabilidades** – el acceso a la base de datos
+  se realiza a través de las clases `CuentasSql`, `UsuariosSql`,
+  `HorariosSql` y `PrestamosSql`, donde se invocan los procedimientos
+  almacenados (`sp_ListarCuentas`, `sp_InsertarCuenta`, `sp_ListarUsuarios`,
+  etc.).  Esto mantiene la lógica de negocios separada de la
+  presentación.
+* **Recálculo automático de fechas** – la fecha de finalización del
+  préstamo se calcula siempre a partir del plazo y la fecha de
+  inicio que proporciona el usuario, evitando inconsistencias.
+* **Interfaz coherente** – se utiliza un esquema de colores en tonos
+  rojos acorde a la identidad visual de Scotiabank y se incluye el
+  logotipo del banco en la parte superior de cada ventana.  Los
+  botones se fusionan y estilizan con bordes redondeados para
+  mejorar la experiencia de usuario.
+
+Este manual pretende servir de guía para los usuarios del sistema,
+describiendo tanto las funcionalidades principales como la forma en
+que se procesan los datos internamente.  Para más detalles sobre
+la estructura de la base de datos y la conexión con la aplicación
+Java, consulte el archivo `Base de datos.txt` incluido en el
+proyecto.

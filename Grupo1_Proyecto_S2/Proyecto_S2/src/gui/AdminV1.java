@@ -1,79 +1,107 @@
 package gui;
 
-import java.awt.EventQueue;
-import java.awt.Toolkit;
 import java.awt.Color;
+import java.awt.EventQueue;
 import java.awt.Font;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import javax.swing.*;
+import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
 import Arreglo.CuentasSql;
+import Arreglo.UsuariosSql;
 import Arreglo.PrestamosSql;
+import Arreglo.HorariosSql;
 import Clase.Banco;
 import Clase.Cuenta;
 import Clase.Persona;
+import Clase.Horario;
 import Clase.Prestamo;
 import gui.Login;
 import gui.RoundedBorder;
 
-public class V1 extends JFrame implements ActionListener {
+/**
+ * Ventana principal para el rol Administrador. Hereda la mayoría de
+ * funcionalidades de la gestión de cuentas y préstamos de la versión
+ * estándar (V1) e incorpora un panel adicional para gestionar usuarios
+ * (empleados y administradores). Permite agregar y eliminar usuarios
+ * directamente desde la interfaz.
+ */
+public class AdminV1 extends JFrame implements ActionListener {
 
     private static final long serialVersionUID = 1L;
+    // Panel principal
     private JPanel contentPane;
-    private JLabel lblNewLabel;
-    private JLabel lblNewLabel_1;
-    private JLabel lblNewLabel_2;
-    private JLabel lblNewLabel_3;
-    private JLabel lblDireccion;
-    private JLabel lblTelefono;
-    private JLabel lblEmail;
     private JTextField txtNom;
     private JTextField txtDni;
-    private JTextField txtCanti;
-    private JScrollPane scrollPane;
-    private JTextArea txtS;
-    private JButton btnNewButton;
-    private JButton btnNewButton_1;
-    private JButton btnNewButton_2;
-    private JButton btnNewButton_3;
-    private JButton btnNewButton_4;
-    private JComboBox<String> comboBox;
-
-    private JLabel lblNewLabel_4;
-    private JTextField txtPlazo;
-    private JLabel lblNewLabel_5;
-    // Campo para ingresar la tasa anual (en porcentaje)
-    private JTextField txtTasa;
-    // Se fusionó la simulación con la evaluación, por lo que ya no se requiere un botón separado
-    // private JButton BtnSimular;
-    private JButton btnEvaluar;
-
-    // Nuevos campos para evaluación de préstamo
-    private JLabel lblIngresos;
-    private JTextField txtIngresos;
-    private JLabel lblMotivo;
-    private JTextField txtMotivo;
-    // Reemplaza el campo "¿Tiene deudas?" por la fecha de inicio del pago
-    private JLabel lblFechaInicio;
-    private JTextField txtFechaInicio;
-
-    // Nuevos campos para dirección, teléfono y correo electrónico
     private JTextField txtDireccion;
     private JTextField txtTelefono;
     private JTextField txtEmail;
+    private JTextField txtCanti;
+    private JScrollPane scrollPane;
+    private JTextArea txtS;
+    private JButton btnReportar;
+    private JButton btnAdicionar;
+    private JButton btnBuscar;
+    private JButton btnEliminar;
+    private JButton btnModificar;
+    // Botón de simulación eliminado al unificar con el de evaluación
+    private JButton btnEvaluar;
+    private JComboBox<String> comboBox;
+    private JTextField txtPlazo;
+    private JTextField txtTasa;
+    // Evaluación
+    private JTextField txtIngresos;
+    private JTextField txtMotivo;
+    // Fecha de inicio de pago (reemplaza al campo de deudas)
+    private JTextField txtFechaInicio;
+
+    // Panel de gestión de usuarios
+    private JTextField txtEmpUsuario;
+    private JPasswordField txtEmpClave;
+    private JComboBox<String> cbEmpRol;
+    private JButton btnAgregarEmp;
+    private JButton btnEliminarEmp;
+    private JButton btnListarEmp;
+    private JTextArea txtEmpListado;
+    private JScrollPane scrollEmp;
+
+    // Botón para listar préstamos
+    private JButton btnListarPrestamos;
+
+    // Gestión de horarios (para asignar turnos a los usuarios)
+    private HorariosSql horariosSql = new HorariosSql();
+    private JComboBox<Horario> cbEmpHorario;
 
     private CuentasSql cuentasSql = new CuentasSql();
-    // Acceso a la tabla de préstamos para registrar la relación cliente‑prestamista
+    private UsuariosSql usuariosSql = new UsuariosSql();
     private PrestamosSql prestamosSql = new PrestamosSql();
 
+    /**
+     * Launch the application.
+     */
     public static void main(String[] args) {
         EventQueue.invokeLater(new Runnable() {
             public void run() {
                 try {
-                    V1 frame = new V1();
+                    AdminV1 frame = new AdminV1();
                     frame.setVisible(true);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -82,214 +110,245 @@ public class V1 extends JFrame implements ActionListener {
         });
     }
 
-    public V1() {
-        setIconImage(Toolkit.getDefaultToolkit().getImage(V1.class.getResource("/Imagen/Banco.png")));
-        setTitle("SCOTIABANK | PRESTAMOS Y CREDITOS");
+    /**
+     * Create the frame.
+     */
+    public AdminV1() {
+        setIconImage(Toolkit.getDefaultToolkit().getImage(AdminV1.class.getResource("/Imagen/Banco.png")));
+        setTitle("SCOTIABANK - PRESTAMOS Y CREDITOS ");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        // Ampliar ancho para incluir panel de evaluación
-        // Ajustar el tamaño de la ventana para dar mayor espacio a los paneles y
-        // evitar que los elementos se vean comprimidos. Ahora el alto es mayor
-        // para mejorar la legibilidad de la interfaz.
-        setBounds(100, 100, 930, 721);
+        // Mayor altura para incluir la sección de empleados
+        // Ajustar altura para incluir la sección de usuarios y de prestamistas
+        // Se aumenta la altura para proporcionar mayor espacio a la sección de gestión
+        // de usuarios y evitar que los controles se vean comprimidos. También se
+        // reserva espacio adicional para futuros elementos.
+        setBounds(100, 100, 930, 873);
         setLocationRelativeTo(null);
 
         contentPane = new JPanel();
-        // Color rojo suavizado para mejor presentación. Se elige un tono más claro
-        // que el utilizado anteriormente para dar un aspecto menos agresivo.
-        // Tono rojo suave #ed3729
+        // Definir un tono rojo más suave para la interfaz.
+        // Tono rojo suave #ed3729 para el fondo
         Color bgColor = new Color(237, 55, 41);
         contentPane.setBackground(bgColor);
         contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
         contentPane.setLayout(null);
         setContentPane(contentPane);
 
-        // Barra de menú para cerrar sesión
+        // Barra de menú con opción para cerrar sesión
         JMenuBar menuBar = new JMenuBar();
         menuBar.setBackground(bgColor);
         JMenu menuUsuario = new JMenu("Cuenta");
         menuUsuario.setForeground(Color.WHITE);
-        JMenuItem itemCerrarSesion = new JMenuItem("Cerrar sesión");
-        itemCerrarSesion.addActionListener(new ActionListener() {
+        JMenuItem itemCerrar = new JMenuItem("Cerrar sesión");
+        itemCerrar.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                // Volver al login
-                Login login = new Login();
-                login.setVisible(true);
+                Login lg = new Login();
+                lg.setVisible(true);
                 dispose();
             }
         });
-        menuUsuario.add(itemCerrarSesion);
+        menuUsuario.add(itemCerrar);
         menuBar.add(menuUsuario);
         setJMenuBar(menuBar);
 
-        
-        JLabel lblNewLabel = new JLabel("");
-        lblNewLabel.setIcon(new ImageIcon(AdminV1.class.getResource("/Imagen/bannerscotia.png")));
-        lblNewLabel.setBounds(316, 11, 274, 41);
-        contentPane.add(lblNewLabel);
-
-       
-        JLabel lblTitulo = new JLabel("GESTIÓN DE CUENTAS Y PRÉSTAMOS - EMPLEADO");
+        // Título y logo
+        JLabel lblTitulo = new JLabel("GESTIÓN DE CUENTAS Y PRÉSTAMOS - ADMIN");
         lblTitulo.setForeground(Color.WHITE);
         lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        lblTitulo.setBounds(243, 63, 416, 20);
+        lblTitulo.setBounds(200, 62, 600, 20);
         contentPane.add(lblTitulo);
 
-      
+        // Panel de datos del cliente
         JPanel panelCliente = new JPanel();
         panelCliente.setLayout(null);
         panelCliente.setOpaque(false);
         panelCliente.setBorder(BorderFactory.createTitledBorder("Datos del cliente"));
-        // Aumentar la altura para incluir dirección, teléfono y email
-        panelCliente.setBounds(10, 94, 280, 210);
+        // Se incrementa la altura para incluir dirección, teléfono y email
+        panelCliente.setBounds(10, 87, 280, 210);
         contentPane.add(panelCliente);
 
-        int yPosCliente = 25;
-        int labelW = 130;
-        int fieldW = 120;
-        int rowH = 25;
+        int yPos = 25;
+        int labelWidth = 130;
+        int fieldWidth = 120;
+        int rowHeight = 25;
 
-        lblNewLabel = new JLabel("Nombre y Apellido:");
-        lblNewLabel.setForeground(Color.WHITE);
-        lblNewLabel.setBounds(10, 56, labelW, 20);
-        panelCliente.add(lblNewLabel);
+        JLabel lblNomAp = new JLabel("Nombre y Apellido:");
+        lblNomAp.setForeground(Color.WHITE);
+        lblNomAp.setBounds(10, 56, labelWidth, 20);
+        panelCliente.add(lblNomAp);
 
         txtNom = new JTextField();
-        txtNom.setBounds(140, 56, fieldW, 20);
+        txtNom.setBounds(140, 56, fieldWidth, 20);
         panelCliente.add(txtNom);
 
-        yPosCliente += rowH;
-        lblNewLabel_1 = new JLabel("DNI:");
-        lblNewLabel_1.setForeground(Color.WHITE);
-        lblNewLabel_1.setBounds(10, 87, labelW, 20);
-        panelCliente.add(lblNewLabel_1);
+        yPos += rowHeight;
+        JLabel lblDni = new JLabel("DNI:");
+        lblDni.setForeground(Color.WHITE);
+        lblDni.setBounds(10, 82, labelWidth, 20);
+        panelCliente.add(lblDni);
 
         txtDni = new JTextField();
-        txtDni.setBounds(140, 87, fieldW, 20);
+        txtDni.setBounds(140, 82, fieldWidth, 20);
         panelCliente.add(txtDni);
 
-        // Dirección
-        yPosCliente += rowH;
-        lblDireccion = new JLabel("Dirección:");
-        lblDireccion.setForeground(Color.WHITE);
-        lblDireccion.setBounds(10, 118, labelW, 20);
-        panelCliente.add(lblDireccion);
+        yPos += rowHeight;
+        JLabel lblDir = new JLabel("Dirección:");
+        lblDir.setForeground(Color.WHITE);
+        lblDir.setBounds(10, 114, labelWidth, 20);
+        panelCliente.add(lblDir);
 
         txtDireccion = new JTextField();
-        txtDireccion.setBounds(140, 118, fieldW, 20);
+        txtDireccion.setBounds(140, 114, fieldWidth, 20);
         panelCliente.add(txtDireccion);
 
-        // Teléfono
-        yPosCliente += rowH;
-        lblTelefono = new JLabel("Teléfono:");
-        lblTelefono.setForeground(Color.WHITE);
-        lblTelefono.setBounds(10, 148, labelW, 20);
-        panelCliente.add(lblTelefono);
+        yPos += rowHeight;
+        JLabel lblTel = new JLabel("Teléfono:");
+        lblTel.setForeground(Color.WHITE);
+        lblTel.setBounds(10, 145, labelWidth, 20);
+        panelCliente.add(lblTel);
 
         txtTelefono = new JTextField();
-        txtTelefono.setBounds(140, 148, fieldW, 20);
+        txtTelefono.setBounds(140, 145, fieldWidth, 20);
         panelCliente.add(txtTelefono);
 
-        // Email
-        yPosCliente += rowH;
-        lblEmail = new JLabel("Email:");
+        yPos += rowHeight;
+        JLabel lblEmail = new JLabel("Email:");
         lblEmail.setForeground(Color.WHITE);
-        lblEmail.setBounds(10, 179, labelW, 20);
+        lblEmail.setBounds(10, 179, labelWidth, 20);
         panelCliente.add(lblEmail);
 
         txtEmail = new JTextField();
-        txtEmail.setBounds(140, 179, fieldW, 20);
+        txtEmail.setBounds(140, 179, fieldWidth, 20);
         panelCliente.add(txtEmail);
 
-        // Tipo de cuenta
-        yPosCliente += rowH;
-        lblNewLabel_2 = new JLabel("Tipo de cuenta:");
-        lblNewLabel_2.setForeground(Color.WHITE);
-        lblNewLabel_2.setBounds(10, 26, labelW, 20);
-        panelCliente.add(lblNewLabel_2);
+        yPos += rowHeight;
+        JLabel lblTipoC = new JLabel("Tipo de cuenta:");
+        lblTipoC.setForeground(Color.WHITE);
+        lblTipoC.setBounds(10, 26, labelWidth, 20);
+        panelCliente.add(lblTipoC);
 
         comboBox = new JComboBox<>();
         comboBox.setModel(new DefaultComboBoxModel<>(new String[]{"Corriente", "Credito", "Ahorro"}));
-        comboBox.setBounds(140, 23, fieldW, 22);
+        comboBox.setBounds(140, 26, fieldWidth, 22);
         panelCliente.add(comboBox);
 
-       
+        // Panel de datos del préstamo
         JPanel panelPrestamo = new JPanel();
         panelPrestamo.setLayout(null);
         panelPrestamo.setOpaque(false);
         panelPrestamo.setBorder(BorderFactory.createTitledBorder("Datos del préstamo"));
-        panelPrestamo.setBounds(310, 94, 280, 120);
+        panelPrestamo.setBounds(310, 87, 280, 120);
         contentPane.add(panelPrestamo);
 
-        lblNewLabel_3 = new JLabel("Cantidad:");
-        lblNewLabel_3.setForeground(Color.WHITE);
-        lblNewLabel_3.setBounds(10, 25, 100, 20);
-        panelPrestamo.add(lblNewLabel_3);
+        JLabel lblCant = new JLabel("Cantidad:");
+        lblCant.setForeground(Color.WHITE);
+        lblCant.setBounds(10, 25, 100, 20);
+        panelPrestamo.add(lblCant);
 
         txtCanti = new JTextField();
         txtCanti.setBounds(140, 25, 120, 20);
         panelPrestamo.add(txtCanti);
 
-        lblNewLabel_4 = new JLabel("Plazo (meses):");
-        lblNewLabel_4.setForeground(Color.WHITE);
-        lblNewLabel_4.setBounds(10, 55, 100, 20);
-        panelPrestamo.add(lblNewLabel_4);
+        JLabel lblPlazo = new JLabel("Plazo (meses):");
+        lblPlazo.setForeground(Color.WHITE);
+        lblPlazo.setBounds(10, 55, 100, 20);
+        panelPrestamo.add(lblPlazo);
 
         txtPlazo = new JTextField();
         txtPlazo.setBounds(140, 55, 120, 20);
         panelPrestamo.add(txtPlazo);
 
-        lblNewLabel_5 = new JLabel("Tasa anual (%):");
-        lblNewLabel_5.setForeground(Color.WHITE);
-        lblNewLabel_5.setBounds(10, 85, 100, 20);
-        panelPrestamo.add(lblNewLabel_5);
+        JLabel lblTasa = new JLabel("Tasa anual (%):");
+        lblTasa.setForeground(Color.WHITE);
+        lblTasa.setBounds(10, 85, 100, 20);
+        panelPrestamo.add(lblTasa);
 
         txtTasa = new JTextField();
         txtTasa.setBounds(140, 85, 120, 20);
         panelPrestamo.add(txtTasa);
 
-      
+        // Panel de evaluación
+        JPanel panelEval = new JPanel();
+        panelEval.setLayout(null);
+        panelEval.setOpaque(false);
+        panelEval.setBorder(BorderFactory.createTitledBorder("Evaluación Préstamo"));
+        panelEval.setBounds(600, 87, 290, 120);
+        contentPane.add(panelEval);
+
+        JLabel lblIng = new JLabel("Ingresos Mensuales (S/):");
+        lblIng.setForeground(Color.WHITE);
+        lblIng.setBounds(10, 25, 160, 20);
+        panelEval.add(lblIng);
+
+        txtIngresos = new JTextField();
+        txtIngresos.setBounds(170, 25, 100, 20);
+        panelEval.add(txtIngresos);
+
+        JLabel lblMot = new JLabel("Motivo del préstamo:");
+        lblMot.setForeground(Color.WHITE);
+        lblMot.setBounds(10, 55, 160, 20);
+        panelEval.add(lblMot);
+
+        txtMotivo = new JTextField();
+        txtMotivo.setBounds(170, 55, 100, 20);
+        panelEval.add(txtMotivo);
+
+        JLabel lblFechaInicio = new JLabel("F. inicio pago (YYYY-MM-DD):");
+        lblFechaInicio.setForeground(Color.WHITE);
+        lblFechaInicio.setBounds(10, 85, 200, 20);
+        panelEval.add(lblFechaInicio);
+
+        txtFechaInicio = new JTextField();
+        txtFechaInicio.setBounds(170, 86, 100, 20);
+        panelEval.add(txtFechaInicio);
+
+        // Botones de acción
         int yBotones = 170;
         int ancho = 110;
         int x = 20;
         int esp = 10;
 
-        btnNewButton = new JButton("REPORTAR");
-        btnNewButton.setBounds(25, 329, ancho, 25);
-        contentPane.add(btnNewButton);
-        btnNewButton.addActionListener(this);
+        btnReportar = new JButton("REPORTAR");
+        btnReportar.setBounds(10, 317, ancho, 25);
+        contentPane.add(btnReportar);
+        btnReportar.addActionListener(this);
 
-        btnNewButton_1 = new JButton("ADICIONAR");
-        btnNewButton_1.setBounds(298, 329, ancho, 25);
-        contentPane.add(btnNewButton_1);
-        btnNewButton_1.addActionListener(this);
+        btnAdicionar = new JButton("ADICIONAR");
+        btnAdicionar.setBounds(248, 317, ancho, 25);
+        contentPane.add(btnAdicionar);
+        btnAdicionar.addActionListener(this);
 
-        btnNewButton_2 = new JButton("BUSCAR");
-        btnNewButton_2.setBounds(162, 329, ancho, 25);
-        contentPane.add(btnNewButton_2);
-        btnNewButton_2.addActionListener(this);
+        btnBuscar = new JButton("BUSCAR");
+        btnBuscar.setBounds(486, 317, ancho, 25);
+        contentPane.add(btnBuscar);
+        btnBuscar.addActionListener(this);
 
-        btnNewButton_3 = new JButton("ELIMINAR");
-        btnNewButton_3.setBounds(442, 329, ancho, 25);
-        contentPane.add(btnNewButton_3);
-        btnNewButton_3.addActionListener(this);
+        btnEliminar = new JButton("ELIMINAR");
+        btnEliminar.setBounds(368, 317, ancho, 25);
+        contentPane.add(btnEliminar);
+        btnEliminar.addActionListener(this);
 
-        btnNewButton_4 = new JButton("MODIFICAR");
-        btnNewButton_4.setBounds(589, 329, ancho, 25);
-        contentPane.add(btnNewButton_4);
-        btnNewButton_4.addActionListener(this);
+        btnModificar = new JButton("MODIFICAR");
+        btnModificar.setBounds(128, 317, ancho, 25);
+        contentPane.add(btnModificar);
+        btnModificar.addActionListener(this);
 
         // Unificar la simulación con la evaluación en un solo botón
         btnEvaluar = new JButton("SIMULAR/EVALUAR");
-        // Avanzar dos posiciones en x para ocupar el espacio de los dos botones anteriores
+        // Avanzar dos espacios de botón: uno para SIMULAR y otro para EVALUAR en la versión anterior
         x += (ancho + esp) * 2;
-        btnEvaluar.setBounds(726, 329, 150, 25);
+        btnEvaluar.setBounds(600, 317, 150, 25);
         contentPane.add(btnEvaluar);
         btnEvaluar.addActionListener(this);
+        // Botón adicional para listar todos los préstamos registrados, ubicado después del botón de evaluación
+        btnListarPrestamos = new JButton("LISTAR PRÉSTAMOS");
+        btnListarPrestamos.setBounds(754, 317, 150, 25);
+        contentPane.add(btnListarPrestamos);
+        btnListarPrestamos.addActionListener(this);
 
+        // Ajustar fuente de los botones y aplicar estilo personalizado
         Font fBoton = new Font("Segoe UI", Font.PLAIN, 12);
-        // Personalizar cada botón: color de fondo, borde redondeado y texto en blanco
-        for (JButton b : new JButton[]{btnNewButton, btnNewButton_1, btnNewButton_2,
-                btnNewButton_3, btnNewButton_4, btnEvaluar}) {
+        for (JButton b : new JButton[]{btnReportar, btnAdicionar, btnBuscar, btnEliminar, btnModificar, btnEvaluar, btnListarPrestamos}) {
             b.setFont(fBoton);
             b.setFocusPainted(false);
             // Usar un tono más oscuro para los botones que contraste con el fondo
@@ -298,9 +357,9 @@ public class V1 extends JFrame implements ActionListener {
             b.setBorder(new RoundedBorder(10, Color.WHITE));
         }
 
-        
+        // Área de texto para reportes y resultados
         scrollPane = new JScrollPane();
-        scrollPane.setBounds(25, 369, 851, 270);
+        scrollPane.setBounds(24, 357, 851, 230);
         contentPane.add(scrollPane);
 
         txtS = new JTextArea();
@@ -309,45 +368,117 @@ public class V1 extends JFrame implements ActionListener {
         txtS.setLineWrap(false);
         scrollPane.setViewportView(txtS);
 
-        // Panel de evaluación de préstamo (nuevos campos)
-        JPanel panelEval = new JPanel();
-        panelEval.setLayout(null);
-        panelEval.setOpaque(false);
-        panelEval.setBorder(BorderFactory.createTitledBorder("Evaluación Préstamo"));
-        panelEval.setBounds(600, 94, 290, 120);
-        contentPane.add(panelEval);
+        // Panel de gestión de empleados
+        JPanel panelEmp = new JPanel();
+        panelEmp.setLayout(null);
+        panelEmp.setOpaque(false);
+        panelEmp.setBorder(BorderFactory.createTitledBorder("Gestión de Usuarios"));
+        panelEmp.setBounds(10, 597, 880, 210);
+        contentPane.add(panelEmp);
 
-        lblIngresos = new JLabel("Ingresos Mensuales (S/):");
-        lblIngresos.setForeground(Color.WHITE);
-        lblIngresos.setBounds(10, 25, 160, 20);
-        panelEval.add(lblIngresos);
+        JLabel lblUserEmp = new JLabel("Usuario:");
+        lblUserEmp.setForeground(Color.WHITE);
+        lblUserEmp.setBounds(20, 25, 80, 20);
+        panelEmp.add(lblUserEmp);
 
-        txtIngresos = new JTextField();
-        txtIngresos.setBounds(170, 25, 100, 20);
-        panelEval.add(txtIngresos);
+        txtEmpUsuario = new JTextField();
+        txtEmpUsuario.setBounds(100, 25, 150, 20);
+        panelEmp.add(txtEmpUsuario);
 
-        lblMotivo = new JLabel("Motivo del préstamo:");
-        lblMotivo.setForeground(Color.WHITE);
-        lblMotivo.setBounds(10, 55, 160, 20);
-        panelEval.add(lblMotivo);
+        JLabel lblClaveEmp = new JLabel("Clave:");
+        lblClaveEmp.setForeground(Color.WHITE);
+        lblClaveEmp.setBounds(270, 25, 80, 20);
+        panelEmp.add(lblClaveEmp);
 
-        txtMotivo = new JTextField();
-        txtMotivo.setBounds(170, 55, 100, 20);
-        panelEval.add(txtMotivo);
+        txtEmpClave = new JPasswordField();
+        txtEmpClave.setBounds(330, 25, 150, 20);
+        panelEmp.add(txtEmpClave);
 
-        // Fecha de inicio de pago
-        lblFechaInicio = new JLabel("F. inicio pago (YYYY-MM-DD):");
-        lblFechaInicio.setForeground(Color.WHITE);
-        lblFechaInicio.setBounds(10, 85, 200, 20);
-        panelEval.add(lblFechaInicio);
+        JLabel lblRolEmp = new JLabel("Rol:");
+        lblRolEmp.setForeground(Color.WHITE);
+        lblRolEmp.setBounds(500, 25, 80, 20);
+        panelEmp.add(lblRolEmp);
 
-        txtFechaInicio = new JTextField();
-        txtFechaInicio.setBounds(170, 86, 100, 20);
-        panelEval.add(txtFechaInicio);
+        cbEmpRol = new JComboBox<>(new String[]{"EMPLEADO", "ADMIN"});
+        cbEmpRol.setBounds(540, 25, 120, 22);
+        panelEmp.add(cbEmpRol);
+
+        // Campo para seleccionar el horario del usuario (solo aplica a empleados)
+        JLabel lblHorarioEmp = new JLabel("Horario:");
+        lblHorarioEmp.setForeground(Color.WHITE);
+        lblHorarioEmp.setBounds(20, 55, 80, 20);
+        panelEmp.add(lblHorarioEmp);
+
+        cbEmpHorario = new JComboBox<>();
+        cbEmpHorario.setBounds(100, 55, 230, 22);
+        panelEmp.add(cbEmpHorario);
+        // Cargar horarios desde la base de datos
+        for (Horario h : horariosSql.listar()) {
+            cbEmpHorario.addItem(h);
+        }
+        cbEmpHorario.setEnabled(false);
+
+        // Acción para habilitar/deshabilitar el combo horario según el rol seleccionado
+        cbEmpRol.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String rolSel = cbEmpRol.getSelectedItem().toString();
+                boolean esEmpleado = "EMPLEADO".equalsIgnoreCase(rolSel);
+                cbEmpHorario.setEnabled(esEmpleado);
+            }
+        });
+
+        btnAgregarEmp = new JButton("AGREGAR");
+        btnAgregarEmp.setBounds(680, 25, 100, 25);
+        panelEmp.add(btnAgregarEmp);
+        btnAgregarEmp.addActionListener(this);
+        // Estilo para los botones del panel de usuarios
+        btnAgregarEmp.setFont(fBoton);
+        btnAgregarEmp.setFocusPainted(false);
+        btnAgregarEmp.setBackground(new Color(205, 45, 31));
+        btnAgregarEmp.setForeground(Color.WHITE);
+        btnAgregarEmp.setBorder(new RoundedBorder(10, Color.WHITE));
+
+        btnEliminarEmp = new JButton("ELIMINAR");
+        // Ajustar posición para dar espacio al campo horario
+        btnEliminarEmp.setBounds(680, 60, 100, 25);
+        panelEmp.add(btnEliminarEmp);
+        btnEliminarEmp.addActionListener(this);
+        btnEliminarEmp.setFont(fBoton);
+        btnEliminarEmp.setFocusPainted(false);
+        btnEliminarEmp.setBackground(new Color(205, 45, 31));
+        btnEliminarEmp.setForeground(Color.WHITE);
+        btnEliminarEmp.setBorder(new RoundedBorder(10, Color.WHITE));
+
+        btnListarEmp = new JButton("LISTAR");
+        // Ajustar posición para dar espacio al campo horario
+        btnListarEmp.setBounds(680, 95, 100, 25);
+        panelEmp.add(btnListarEmp);
+        btnListarEmp.addActionListener(this);
+        btnListarEmp.setFont(fBoton);
+        btnListarEmp.setFocusPainted(false);
+        btnListarEmp.setBackground(new Color(205, 45, 31));
+        btnListarEmp.setForeground(Color.WHITE);
+        btnListarEmp.setBorder(new RoundedBorder(10, Color.WHITE));
+
+        // Área para listar usuarios
+        scrollEmp = new JScrollPane();
+        // Mover ligeramente hacia abajo para no superponerse con los campos adicionales
+        scrollEmp.setBounds(20, 85, 640, 120);
+        panelEmp.add(scrollEmp);
+        txtEmpListado = new JTextArea();
+        txtEmpListado.setEditable(false);
+        txtEmpListado.setFont(new Font("Consolas", Font.PLAIN, 12));
+        scrollEmp.setViewportView(txtEmpListado);
+        
+        JLabel lblNewLabel = new JLabel("");
+        lblNewLabel.setIcon(new ImageIcon(AdminV1.class.getResource("/Imagen/bannerscotia.png")));
+        lblNewLabel.setBounds(316, 11, 274, 41);
+        contentPane.add(lblNewLabel);
+
     }
 
-  
-
+    // Métodos auxiliares para lectura y validación (copiados de V1)
     int leerDNI() {
         String texto = txtDni.getText().trim();
         if (texto.isEmpty()) {
@@ -398,7 +529,6 @@ public class V1 extends JFrame implements ActionListener {
 
     void Listado() {
         txtS.setText("");
-        // Encabezado actualizado: se eliminó la columna BANCO y se añadieron num. cuotas y fechas
         Imprimir("N° CUENTA\tDNI\tNOMBRE CLIENTE\tTIPO CUENTA\tMONTO\tCUOTAS\tF. INICIO\tF. FIN");
         Imprimir("------------------------------------------------------------------------------------------------------");
 
@@ -416,31 +546,34 @@ public class V1 extends JFrame implements ActionListener {
         }
     }
 
-    
-
+    @Override
     public void actionPerformed(ActionEvent e) {
-        if (e.getSource() == btnEvaluar) {
-            do_btnEvaluar_actionPerformed(e);
-        } else if (e.getSource() == btnNewButton_4) {
-            do_btnNewButton_4_actionPerformed(e);
-        } else if (e.getSource() == btnNewButton_3) {
-            do_btnNewButton_3_actionPerformed(e);
-        } else if (e.getSource() == btnNewButton_2) {
-            do_btnNewButton_2_actionPerformed(e);
-        } else if (e.getSource() == btnNewButton_1) {
-            do_btnNewButton_1_actionPerformed(e);
-        } else if (e.getSource() == btnNewButton) {
-            do_btnNewButton_actionPerformed(e);
+        Object src = e.getSource();
+        if (src == btnEvaluar) {
+            evaluarPrestamo();
+        } else if (src == btnModificar) {
+            modificarCuenta();
+        } else if (src == btnEliminar) {
+            eliminarCuenta();
+        } else if (src == btnBuscar) {
+            buscarCuenta();
+        } else if (src == btnAdicionar) {
+            adicionarCuenta();
+        } else if (src == btnReportar) {
+            Listado();
+        } else if (src == btnAgregarEmp) {
+            agregarUsuario();
+        } else if (src == btnEliminarEmp) {
+            eliminarUsuario();
+        } else if (src == btnListarEmp) {
+            listarUsuarios();
+        } else if (src == btnListarPrestamos) {
+            listarPrestamos();
         }
     }
 
-    // BOTÓN REPORTAR 
-    protected void do_btnNewButton_actionPerformed(ActionEvent e) {
-        Listado();
-    }
-
-    // BOTÓN ADICIONAR 
-    protected void do_btnNewButton_1_actionPerformed(ActionEvent e) {
+    // Métodos de acción para las cuentas (basados en V1)
+    private void adicionarCuenta() {
         try {
             int dni = leerDNI();
             if (dni <= 0) return;
@@ -456,7 +589,7 @@ public class V1 extends JFrame implements ActionListener {
 
             String tipo = leerTipo();
 
-            // Leer número de cuotas (plazo en meses)
+            // Leer número de cuotas (plazo)
             int numCuotas;
             try {
                 numCuotas = Integer.parseInt(txtPlazo.getText().trim());
@@ -468,50 +601,41 @@ public class V1 extends JFrame implements ActionListener {
                 JOptionPane.showMessageDialog(this, "El plazo debe ser mayor a cero.");
                 return;
             }
-
-            // Leer fecha de inicio de pago y convertir a java.sql.Date
+            // Leer fecha de inicio de pago y calcular fecha final
             String fechaInicioStr = txtFechaInicio.getText().trim();
             if (fechaInicioStr.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Ingrese la fecha de inicio de pago en formato YYYY-MM-DD.");
+                JOptionPane.showMessageDialog(this, "Ingrese la fecha de inicio de pago.");
                 return;
             }
             java.sql.Date fechaInicioSql;
             java.sql.Date fechaFinSql;
             try {
-                java.time.LocalDate fechaInicioLocal = java.time.LocalDate.parse(fechaInicioStr);
-                fechaInicioSql = java.sql.Date.valueOf(fechaInicioLocal);
-                // Calcular fecha final sumando el número de cuotas en meses
-                java.time.LocalDate fechaFinLocal = fechaInicioLocal.plusMonths(numCuotas);
-                fechaFinSql = java.sql.Date.valueOf(fechaFinLocal);
+                java.time.LocalDate fi = java.time.LocalDate.parse(fechaInicioStr);
+                fechaInicioSql = java.sql.Date.valueOf(fi);
+                java.time.LocalDate ff = fi.plusMonths(numCuotas);
+                fechaFinSql = java.sql.Date.valueOf(ff);
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Formato de fecha de inicio inválido (use YYYY-MM-DD).");
+                JOptionPane.showMessageDialog(this, "Formato de fecha de inicio inválido (YYYY-MM-DD).");
                 return;
             }
 
             Persona personaBD = cuentasSql.buscarPersonaDNI(dni);
 
             if (personaBD == null) {
-                // Dividir el nombre completo en nombre y apellido si hay un espacio
+                // Dividir nombre completo en nombre y apellido si es posible
                 String nombre = nombreCompleto;
                 String apellido = "";
-                int idxEspacio = nombreCompleto.trim().lastIndexOf(' ');
-                if (idxEspacio > 0) {
-                    nombre = nombreCompleto.substring(0, idxEspacio).trim();
-                    apellido = nombreCompleto.substring(idxEspacio + 1).trim();
-                }
-                // Leer dirección, teléfono y email de los campos de texto
+                // Leer datos adicionales del cliente
                 String direccion = txtDireccion.getText().trim();
                 if (direccion.isEmpty()) direccion = "Sin dirección";
                 String telefono = txtTelefono.getText().trim();
                 if (telefono.isEmpty()) telefono = "Sin teléfono";
                 String email = txtEmail.getText().trim();
                 if (email.isEmpty()) email = "Sin correo";
-
                 Persona nuevaPersona = new Persona(
                         dni, nombre, apellido,
                         direccion, telefono, email
                 );
-
                 boolean okPersona = cuentasSql.insertarPersona(nuevaPersona);
                 if (!okPersona) {
                     JOptionPane.showMessageDialog(this,
@@ -529,7 +653,6 @@ public class V1 extends JFrame implements ActionListener {
             );
 
             String numeroCuenta = "CT-" + dni;
-            // Crear cuenta con cuotas y fechas
             Cuenta nuevaCuenta = new Cuenta(
                     numeroCuenta,
                     personaBD,
@@ -542,9 +665,10 @@ public class V1 extends JFrame implements ActionListener {
             );
 
             if (cuentasSql.insertar(nuevaCuenta)) {
-                // Una vez creada la cuenta se registra también el préstamo para reflejar
-                // la relación entre cliente y prestamista. Se asigna por defecto el
-                // prestamista con id 1 (puede modificarse en la interfaz de admin).
+                // Registrar un préstamo asociado a la nueva cuenta. Se asigna el
+                // prestamista con id 1 por defecto. Los campos de motivo, tasa y
+                // ingresos se leen de la interfaz; si no se proporcionan se usan
+                // valores predeterminados.
                 try {
                     double ingresosMensuales = 0;
                     try {
@@ -559,13 +683,11 @@ public class V1 extends JFrame implements ActionListener {
                         tasaAnualPrestamo = 0;
                     }
                     String motivoPrestamo = txtMotivo.getText().trim();
-                    // Por defecto el estado será APROBADO ya que el botón ADICIONAR se
-                    // utiliza después de la evaluación del crédito.
                     Prestamo pr = new Prestamo();
                     pr.setDni(personaBD.getDni());
-                    // El prestamista es el usuario actualmente autenticado
-                    int idUsuarioReg = Login.currentUserId > 0 ? Login.currentUserId : 1;
-                    pr.setIdUsuario(idUsuarioReg);
+                    // El usuario que registra el préstamo es el usuario actualmente autenticado (ADMIN o EMPLEADO)
+                    int idUsuario = Login.currentUserId > 0 ? Login.currentUserId : 1;
+                    pr.setIdUsuario(idUsuario);
                     pr.setNumeroCuenta(numeroCuenta);
                     pr.setMonto(monto);
                     pr.setNumCuotas(numCuotas);
@@ -577,11 +699,10 @@ public class V1 extends JFrame implements ActionListener {
                     pr.setIngresosMensuales(ingresosMensuales);
                     prestamosSql.insertar(pr);
                 } catch (Exception ex) {
-                    // En caso de error al registrar el préstamo se informa en consola
                     System.out.println("Error al registrar préstamo: " + ex.getMessage());
                 }
                 JOptionPane.showMessageDialog(this,
-                        "Cuenta y préstamo registrados correctamente en Scotiabank.");
+                        "Cuenta y préstamo registrados correctamente en Scotiabank (persona registrada en BD).");
                 Listado();
             } else {
                 JOptionPane.showMessageDialog(this, "Error al crear la cuenta.");
@@ -592,15 +713,11 @@ public class V1 extends JFrame implements ActionListener {
         }
     }
 
-    // BOTÓN BUSCAR 
-    protected void do_btnNewButton_2_actionPerformed(ActionEvent e) {
+    private void buscarCuenta() {
         txtS.setText("");
-
         int dni = leerDNI();
         if (dni <= 0) return;
-
         Cuenta cuenta = cuentasSql.buscarCuentaDNI(dni);
-
         if (cuenta != null) {
             txtS.append("N° Cuenta\tDNI\tCliente\tTipo\tMonto\tCuotas\tF.Inicio\tF.Fin\n");
             txtS.append("-------------------------------------------------------------------------\n");
@@ -618,17 +735,14 @@ public class V1 extends JFrame implements ActionListener {
         }
     }
 
-    //  BOTÓN ELIMINAR
-    protected void do_btnNewButton_3_actionPerformed(ActionEvent e) {
+    private void eliminarCuenta() {
         int dni = leerDNI();
         if (dni <= 0) return;
-
         Cuenta c = cuentasSql.buscarCuentaDNI(dni);
         if (c == null) {
             JOptionPane.showMessageDialog(this, "No existe la cuenta para ese DNI.");
             return;
         }
-
         if (cuentasSql.eliminar(c.getNumeroCuenta())) {
             JOptionPane.showMessageDialog(this, "Registro eliminado correctamente.");
             Listado();
@@ -637,33 +751,26 @@ public class V1 extends JFrame implements ActionListener {
         }
     }
 
-    //  BOTÓN MODIFICAR 
-    protected void do_btnNewButton_4_actionPerformed(ActionEvent e) {
+    private void modificarCuenta() {
         try {
             int dni = leerDNI();
             if (dni <= 0) return;
-
             Persona p = cuentasSql.buscarPersonaDNI(dni);
             Cuenta c = cuentasSql.buscarCuentaDNI(dni);
-
             if (p == null || c == null) {
                 JOptionPane.showMessageDialog(this,
                         "No se encontró persona/cuenta para ese DNI.");
                 return;
             }
-
             String nuevoNombre = leerNomApell();
             if (nuevoNombre == null) return;
-
             p.setNombre(nuevoNombre);
-
             boolean okPersona = cuentasSql.editarPersona(p);
             if (!okPersona) {
                 JOptionPane.showMessageDialog(this,
                         "No se pudo actualizar los datos del cliente.");
                 return;
             }
-
             String nuevoTipo = leerTipo();
             double nuevoMonto = LeerCanti();
             if (nuevoMonto <= 0) {
@@ -699,23 +806,19 @@ public class V1 extends JFrame implements ActionListener {
                 JOptionPane.showMessageDialog(this, "Formato de fecha de inicio inválido (YYYY-MM-DD).");
                 return;
             }
-
             c.setTipoCuenta(nuevoTipo);
             c.setMonto(nuevoMonto);
             c.setNumeroCuotas(numCuotas);
             c.setFechaInicio(fechaIniSql);
             c.setFechaFin(fechaFinSql);
-
             boolean okCuenta = cuentasSql.modificar(c);
             if (!okCuenta) {
                 JOptionPane.showMessageDialog(this,
                         "No se pudo actualizar la cuenta en la BD.");
                 return;
             }
-
             JOptionPane.showMessageDialog(this, "Datos modificados correctamente.");
             Listado();
-
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this,
                     "Error al modificar: " + ex.getMessage());
@@ -723,52 +826,11 @@ public class V1 extends JFrame implements ActionListener {
     }
 
 
-    // LÓGICA DE EVALUACIÓN DE PRÉSTAMO 
-    private String evaluarPrestamo(Cuenta cuenta,
-                                   double montoSolicitado,
-                                   int plazo,
-                                   double tasaAnual) {
-
-        String tipo = cuenta.getTipoCuenta();
-        if (!(tipo.equalsIgnoreCase("Corriente") ||
-              tipo.equalsIgnoreCase("Ahorro"))) {
-            return "Rechazado: el tipo de cuenta no aplica para préstamos.";
-        }
-
-        double saldo = cuenta.getMonto();
-        double maxPorSaldo = saldo * 3;
-
-        if (montoSolicitado > maxPorSaldo) {
-            return "Rechazado: el monto solicitado supera el máximo permitido según su saldo (máx S/ "
-                    + String.format("%.2f", maxPorSaldo) + ").";
-        }
-
-        if (montoSolicitado > 50000) {
-            return "Rechazado: el monto solicitado supera el límite de S/ 50,000.";
-        }
-
-        if (plazo < 6 || plazo > 48) {
-            return "Rechazado: el plazo debe estar entre 6 y 48 meses.";
-        }
-
-        if (tasaAnual < 5 || tasaAnual > 40) {
-            return "Rechazado: la tasa anual debe estar entre 5% y 40%.";
-        }
-
-        return "Aprobado: el cliente califica para el préstamo.";
-    }
-
-    //BOTÓN EVALUAR PRÉSTAMO
-    protected void do_btnEvaluar_actionPerformed(ActionEvent e) {
-        // Evaluación de préstamo basada en capacidad de pago (35% de los ingresos mensuales)
+    private void evaluarPrestamo() {
         try {
-            // Validar DNI, aunque no se use para cálculo, se mantiene coherencia con base de datos
             int dni = leerDNI();
             if (dni <= 0) return;
-
             // La evaluación puede realizarse sin que exista una cuenta previa.
-
-            // Leer y validar monto y plazo
             double montoSolicitado = LeerCanti();
             if (montoSolicitado <= 0) {
                 JOptionPane.showMessageDialog(this, "El monto debe ser mayor que cero.");
@@ -785,8 +847,6 @@ public class V1 extends JFrame implements ActionListener {
                 JOptionPane.showMessageDialog(this, "El plazo debe ser mayor que cero.");
                 return;
             }
-
-            // Leer ingresos mensuales
             double ingresosMensuales = 0;
             try {
                 ingresosMensuales = Double.parseDouble(txtIngresos.getText().trim());
@@ -798,8 +858,6 @@ public class V1 extends JFrame implements ActionListener {
                 JOptionPane.showMessageDialog(this, "Los ingresos mensuales deben ser mayores que cero.");
                 return;
             }
-
-            // Leer tasa anual para la simulación
             double tasaAnual = 0;
             try {
                 tasaAnual = Double.parseDouble(txtTasa.getText().trim());
@@ -807,7 +865,6 @@ public class V1 extends JFrame implements ActionListener {
                 JOptionPane.showMessageDialog(this, "Ingrese una tasa anual válida.");
                 return;
             }
-
             // Leer fecha de inicio de pago y calcular fecha final
             String fechaInicioStr = txtFechaInicio.getText().trim();
             if (fechaInicioStr.isEmpty()) {
@@ -825,12 +882,8 @@ public class V1 extends JFrame implements ActionListener {
                 JOptionPane.showMessageDialog(this, "Formato de fecha de inicio inválido (YYYY-MM-DD).");
                 return;
             }
-
-            // Calcular cuota mensual (sin intereses para evaluación de capacidad)
             double cuotaSimple = montoSolicitado / plazo;
             double capacidadMensual = ingresosMensuales * 0.35;
-
-            // Limpiar el área de texto y mostrar la información evaluada
             txtS.setText("");
             txtS.append("--- RESULTADO DE EVALUACIÓN ---\n");
             txtS.append("Monto Solicitado: S/ " + String.format("%.2f", montoSolicitado) + "\n");
@@ -840,17 +893,14 @@ public class V1 extends JFrame implements ActionListener {
             txtS.append("Fecha inicio de pago: " + fechaInicioSql + "\n");
             txtS.append("Fecha final de pago: " + fechaFinSql + "\n");
             txtS.append("Cuota Mensual (sin intereses): S/ " + String.format("%.2f", cuotaSimple) + "\n\n");
-
             if (capacidadMensual >= cuotaSimple) {
                 txtS.append("RESULTADO: APTO Y APROBADO\n");
                 txtS.append("El cliente tiene la capacidad para pagar la cuota mensual.\n\n");
-                // Realizar simulación con intereses
                 double tasaMensual = tasaAnual / 12 / 100;
                 double cuota = (montoSolicitado * tasaMensual) /
                         (1 - Math.pow(1 + tasaMensual, -plazo));
                 double totalPagar = cuota * plazo;
                 double interesesTotales = totalPagar - montoSolicitado;
-
                 txtS.append("--- SIMULACIÓN DE PAGO ---\n");
                 txtS.append("Tasa Anual: " + tasaAnual + "%\n");
                 txtS.append("Cuota Mensual (con intereses): S/ " + String.format("%.2f", cuota) + "\n");
@@ -859,12 +909,100 @@ public class V1 extends JFrame implements ActionListener {
             } else {
                 txtS.append("RESULTADO: NO APTO\n");
                 txtS.append("Motivo: Excede su capacidad de crédito.\n");
-                // Calcular crédito máximo basado en capacidad mensual
                 double maximoPrestamo = capacidadMensual * plazo;
                 txtS.append("Crédito máximo a ofrecer: S/ " + String.format("%.2f", maximoPrestamo) + "\n");
             }
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Error en la evaluación: " + ex.getMessage());
+        }
+    }
+
+    // Métodos para la gestión de usuarios
+    private void agregarUsuario() {
+        String usuario = txtEmpUsuario.getText().trim();
+        String clave = new String(txtEmpClave.getPassword());
+        String rol = cbEmpRol.getSelectedItem().toString();
+        if (usuario.isEmpty() || clave.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Complete todos los campos para agregar un usuario.");
+            return;
+        }
+        // Determinar el id del turno a asignar. Si el rol es ADMIN se usa null.
+        Integer idTurno = null;
+        if ("EMPLEADO".equalsIgnoreCase(rol)) {
+            Object selected = cbEmpHorario.getSelectedItem();
+            if (selected instanceof Horario) {
+                idTurno = ((Horario) selected).getIdTurno();
+            }
+        }
+        boolean ok = usuariosSql.insertarUsuario(usuario, clave, rol, idTurno);
+        if (ok) {
+            JOptionPane.showMessageDialog(this, "Usuario agregado correctamente.");
+            txtEmpUsuario.setText("");
+            txtEmpClave.setText("");
+            listarUsuarios();
+        } else {
+            JOptionPane.showMessageDialog(this, "Error al agregar el usuario. Verifique si ya existe.");
+        }
+    }
+
+    private void eliminarUsuario() {
+        String usuario = txtEmpUsuario.getText().trim();
+        if (usuario.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Ingrese el usuario a eliminar.");
+            return;
+        }
+        if (usuario.equalsIgnoreCase("admin")) {
+            JOptionPane.showMessageDialog(this, "No es posible eliminar la cuenta principal de administrador.");
+            return;
+        }
+        boolean ok = usuariosSql.eliminarUsuario(usuario);
+        if (ok) {
+            JOptionPane.showMessageDialog(this, "Usuario eliminado correctamente.");
+            txtEmpUsuario.setText("");
+            txtEmpClave.setText("");
+            listarUsuarios();
+        } else {
+            JOptionPane.showMessageDialog(this, "No se pudo eliminar el usuario. Verifique el nombre.");
+        }
+    }
+
+    private void listarUsuarios() {
+        txtEmpListado.setText("");
+        // Cabecera: ID, usuario, clave, rol, turno, días y horario
+        txtEmpListado.append("ID\tUSUARIO\tCLAVE\tROL\tTURNO\tDÍAS\tHORARIO\n");
+        txtEmpListado.append("------------------------------------------------------------------------------\n");
+        for (String[] data : usuariosSql.listar()) {
+            // data: [id_usuario, usuario, clave, rol, id_turno, dia_turnos, horario]
+            txtEmpListado.append(data[0] + "\t" + data[1] + "\t" + data[2] + "\t" + data[3] + "\t" +
+                                data[4] + "\t" + data[5] + "\t" + data[6] + "\n");
+        }
+    }
+
+    /*
+     *  Métodos adicionales para la gestión de préstamos.
+     *  Se mantiene la clase PrestamosSql para interactuar con la tabla
+     *  `prestamos`.  En versiones anteriores existía una clase
+     *  PrestamistasSql que gestionaba a los asesores de crédito de forma
+     *  independiente, pero ahora los prestamistas están unificados con
+     *  la tabla `usuarios` y ya no se usa una clase separada.
+     */
+
+
+    // Lista todos los préstamos y los muestra en el área de texto principal
+    private void listarPrestamos() {
+        java.util.ArrayList<Prestamo> lista = prestamosSql.listar();
+        txtS.setText("");
+        // Cabecera con usuario que realizó el préstamo
+        txtS.append("ID\tDNI Cliente\tUsuario\tCuenta\tMonto\tCuotas\tTasa\tF.Inicio\tF.Fin\tEstado\n");
+        txtS.append("--------------------------------------------------------------------------------------------------------------\n");
+        for (Prestamo pr : lista) {
+            txtS.append(pr.getIdPrestamo() + "\t" + pr.getDni() + "\t" + pr.getNombreUsuario() + "\t" +
+                    pr.getNumeroCuenta() + "\t" +
+                    String.format("%.2f", pr.getMonto()) + "\t" + pr.getNumCuotas() + "\t" +
+                    String.format("%.2f", pr.getTasaAnual()) + "\t" +
+                    (pr.getFechaInicio() != null ? pr.getFechaInicio().toString() : "-") + "\t" +
+                    (pr.getFechaFin() != null ? pr.getFechaFin().toString() : "-") + "\t" +
+                    pr.getEstado() + "\n");
         }
     }
 }

@@ -1,21 +1,46 @@
+
 CREATE DATABASE scotiabank_db;
 USE scotiabank_db;
 
+--
+-- Tabla `horarios`
+--
+-- Esta tabla almacena los turnos disponibles para los empleados.
+-- Se compone de un identificador, el día o días que abarca el turno
+-- y el rango horario en formato de texto (por ejemplo, '08:00-14:00').
+
+CREATE TABLE horarios (
+    id_turno INT AUTO_INCREMENT PRIMARY KEY,
+    dia_turnos VARCHAR(50),
+    horario VARCHAR(50)
+);
+
+-- Datos de ejemplo para horarios. Estos registros representan
+-- turnos típicos; pueden ampliarse o modificarse según se requiera.
+INSERT INTO horarios (dia_turnos, horario) VALUES
+('Lunes a Viernes', '08:00-16:00'),
+('Lunes a Viernes', '10:00-18:00'),
+('Sabado y Domingo', '09:00-13:00');
+
 CREATE TABLE usuarios (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_usuario INT AUTO_INCREMENT PRIMARY KEY,
     usuario VARCHAR(50) UNIQUE,
     clave VARCHAR(100),
-    rol VARCHAR(20)
+    rol VARCHAR(20),
+    -- id_turno referencia el turno asignado al usuario. Puede ser NULL para usuarios
+    -- con rol ADMIN, ya que no están sujetos a un horario específico.
+    id_turno INT,
+    FOREIGN KEY (id_turno) REFERENCES horarios(id_turno)
 );
 CREATE TABLE personas (
-    DNI INT PRIMARY KEY,
-    NOMBRE VARCHAR(100),
-    APELLIDO VARCHAR(100),
-    DIRECCION VARCHAR(150),
-    TELEFONO VARCHAR(20),
-    EMAIL VARCHAR(100)
+    dni_persona INT PRIMARY KEY,
+    nombre VARCHAR(100),
+    apellido VARCHAR(100),
+    direccion VARCHAR(150),
+    telefono VARCHAR(20),
+    email VARCHAR(100)
 );
-INSERT INTO personas (dni, nombre, apellido, direccion, telefono, email) VALUES
+INSERT INTO personas (dni_persona, nombre, apellido, direccion, telefono, email) VALUES
 (74125896, 'Marcos', 'Estrada', 'Av. Primavera 123 - Surco', '987654321', 'marcos.estrada@gmail.com'),
 (75648912, 'Claudia', 'Rivas', 'Jr. Las Flores 560 - San Borja', '912345678', 'claudia.rivas@gmail.com'),
 (70894512, 'Carlos', 'Inga', 'Av. San Luis 340 - La Victoria', '999874512', 'carlos.inga@hotmail.com'),
@@ -33,40 +58,47 @@ select * from personas;
 call sp_Listar();
 
 create procedure sp_Insertar(
-	dni INT,
-    nombre VARCHAR(100),
-    apellido VARCHAR(100),
-    direccion VARCHAR(150),
-    telefono VARCHAR(20),
-    email VARCHAR(100)
+    dni_in INT,
+    nombre_in VARCHAR(100),
+    apellido_in VARCHAR(100),
+    direccion_in VARCHAR(150),
+    telefono_in VARCHAR(20),
+    email_in VARCHAR(100)
 )
-insert into personas values(dni,nombre,apellido,direccion,telefono,email);
+insert into personas (dni_persona, nombre, apellido, direccion, telefono, email)
+values (dni_in, nombre_in, apellido_in, direccion_in, telefono_in, email_in);
 call sp_Insertar(74484741, 'Gustavo', 'Trujillo', 'Av. Brasil 123 - san Borja', '923923050', 'trujillo.casana@gmail.com');
 call sp_Listar();
 
 create procedure sp_Eliminar(
-dni_ELIMINAR INT)
-delete from personas where DNI=dni_ELIMINAR;
+    dni_eliminar INT)
+delete from personas where dni_persona = dni_eliminar;
 
 CALL sp_Eliminar(74484741);
 call sp_Listar();
 
 create procedure sp_Editar(
-	dni_editar INT,
+    dni_editar INT,
     nombre_editar VARCHAR(100),
     apellido_editar VARCHAR(100),
     direccion_editar VARCHAR(150),
     telefono_editar VARCHAR(20),
     email_editar VARCHAR(100))
-update personas set DNI=dni_editar,NOMBRE=nombre_editar,APELLIDO=apellido_editar,DIRECCION=direccion_editar,TELEFONO=telefono_editar,EMAIL=email_editar
-where  DNI=dni_editar;
+update personas
+set dni_persona = dni_editar,
+    nombre = nombre_editar,
+    apellido = apellido_editar,
+    direccion = direccion_editar,
+    telefono = telefono_editar,
+    email = email_editar
+where dni_persona = dni_editar;
 
 call sp_Editar(74484741, 'GUSTAVO', 'Trujillo', 'Av. Brasil 123 - san Borja', '923923050', 'trujillo.casana@gmail.com');
 call sp_Listar();
 
 create procedure sp_ConsultarDNI(
-dni_consultar INT)
-select * from personas where DNI=dni_consultar;
+    dni_consultar INT)
+select * from personas where dni_persona = dni_consultar;
 
 call sp_ConsultarDNI(74484741);
 
@@ -74,82 +106,386 @@ call sp_ConsultarDNI(74484741);
 -------
 -------
 
+--
+-- Tabla `cuentas`
+--
+-- En esta versión se elimina la columna `banco` porque todas las
+-- cuentas corresponden a Scotiabank. Se agregan nuevas columnas para
+-- registrar el número de cuotas del préstamo, la fecha de inicio de pago
+-- y la fecha final de pago. La fecha final se calcula sumando el
+-- plazo (número de meses) a la fecha de inicio.
+
 CREATE TABLE cuentas (
     numero_cuenta VARCHAR(20) PRIMARY KEY,
-    dni INT,
+    dni_persona INT,
     tipo_cuenta VARCHAR(30),
     monto DECIMAL(10,2),
-    banco VARCHAR(100),
-    FOREIGN KEY (dni) REFERENCES personas(dni)
+    num_cuotas INT,
+    fecha_inicio DATE,
+    fecha_fin DATE,
+    FOREIGN KEY (dni_persona) REFERENCES personas(dni_persona)
 );
-INSERT INTO cuentas (numero_cuenta, dni, tipo_cuenta, monto, banco) VALUES
-('CT-74125896', 74125896, 'Ahorro', 3500.50, 'Scotiabank'),
-('CT-75648912', 75648912, 'Corriente', 1200.00, 'Scotiabank'),
-('CT-70894512', 70894512, 'Credito', 8500.00, 'Scotiabank'),
-('CT-71458963', 71458963, 'Ahorro', 950.20, 'Scotiabank'),
-('CT-72589641', 72589641, 'Corriente', 4500.00, 'Scotiabank'),
-('CT-73214598', 73214598, 'Credito', 15000.00, 'Scotiabank'),
-('CT-70123458', 70123458, 'Ahorro', 780.00, 'Scotiabank'),
-('CT-74561239', 74561239, 'Corriente', 2600.75, 'Scotiabank'),
-('CT-75231498', 75231498, 'Credito', 5000.00, 'Scotiabank'),
-('CT-70987412', 70987412, 'Ahorro', 1200.00, 'Scotiabank');
+
+-- Datos de ejemplo para cuentas. Se usan números de cuotas y
+-- fechas de inicio/final genéricas; estos valores pueden actualizarse
+-- al poblar la base de datos real.
+INSERT INTO cuentas (numero_cuenta, dni_persona, tipo_cuenta, monto, num_cuotas, fecha_inicio, fecha_fin) VALUES
+('CT-74125896', 74125896, 'Ahorro',    3500.50, 12, '2025-01-01', '2026-01-01'),
+('CT-75648912', 75648912, 'Corriente', 1200.00, 12, '2025-01-01', '2026-01-01'),
+('CT-70894512', 70894512, 'Credito',   8500.00, 12, '2025-01-01', '2026-01-01'),
+('CT-71458963', 71458963, 'Ahorro',     950.20, 12, '2025-01-01', '2026-01-01'),
+('CT-72589641', 72589641, 'Corriente', 4500.00, 12, '2025-01-01', '2026-01-01'),
+('CT-73214598', 73214598, 'Credito',  15000.00, 12, '2025-01-01', '2026-01-01'),
+('CT-70123458', 70123458, 'Ahorro',     780.00, 12, '2025-01-01', '2026-01-01'),
+('CT-74561239', 74561239, 'Corriente', 2600.75, 12, '2025-01-01', '2026-01-01'),
+('CT-75231498', 75231498, 'Credito',   5000.00, 12, '2025-01-01', '2026-01-01'),
+('CT-70987412', 70987412, 'Ahorro',    1200.00, 12, '2025-01-01', '2026-01-01');
 
 
 CREATE PROCEDURE sp_ListarCuentas()
 SELECT 
     c.numero_cuenta,
-    c.dni,
-    p.NOMBRE AS nombre,
-    p.APELLIDO AS apellido,
+    c.dni_persona AS dni,
+    p.nombre AS nombre,
+    p.apellido AS apellido,
     c.tipo_cuenta,
     c.monto,
-    c.banco
+    c.num_cuotas,
+    c.fecha_inicio,
+    c.fecha_fin
 FROM cuentas c
-INNER JOIN personas p ON c.dni = p.DNI;
+INNER JOIN personas p ON c.dni_persona = p.dni_persona;
 
 
 CREATE PROCEDURE sp_BuscarCuentaDNI(IN dni_buscar INT)
 SELECT 
     c.numero_cuenta,
-    c.dni,
-    p.NOMBRE AS nombre,
-    p.APELLIDO AS apellido,
+    c.dni_persona AS dni,
+    p.nombre AS nombre,
+    p.apellido AS apellido,
     c.tipo_cuenta,
     c.monto,
-    c.banco
+    c.num_cuotas,
+    c.fecha_inicio,
+    c.fecha_fin
 FROM cuentas c
-INNER JOIN personas p ON c.dni = p.DNI
-WHERE c.dni = dni_buscar;
+INNER JOIN personas p ON c.dni_persona = p.dni_persona
+WHERE c.dni_persona = dni_buscar;
 
 
 CREATE PROCEDURE sp_InsertarCuenta(
     IN num VARCHAR(20),
-    IN dni_cliente INT,
+    IN dni_in INT,
     IN tipo VARCHAR(30),
     IN monto DECIMAL(10,2),
-    IN banco VARCHAR(100)
+    IN num_cuotas INT,
+    IN fecha_inicio DATE,
+    IN fecha_fin DATE
 )
-INSERT INTO cuentas VALUES (num, dni_cliente, tipo, monto, banco);
+INSERT INTO cuentas (numero_cuenta, dni_persona, tipo_cuenta, monto, num_cuotas, fecha_inicio, fecha_fin)
+VALUES (num, dni_in, tipo, monto, num_cuotas, fecha_inicio, fecha_fin);
 
 
 CREATE PROCEDURE sp_ModificarCuenta(
     IN num VARCHAR(20),
     IN tipo VARCHAR(30),
-    IN monto DECIMAL(10,2)
+    IN monto DECIMAL(10,2),
+    IN num_cuotas INT,
+    IN fecha_inicio DATE,
+    IN fecha_fin DATE
 )
-UPDATE cuentas 
+UPDATE cuentas
 SET tipo_cuenta = tipo,
-    monto = monto
+    monto = monto,
+    num_cuotas = num_cuotas,
+    fecha_inicio = fecha_inicio,
+    fecha_fin = fecha_fin
 WHERE numero_cuenta = num;
 
 
 CREATE PROCEDURE sp_EliminarCuenta(IN cuenta VARCHAR(20))
 DELETE FROM cuentas WHERE numero_cuenta = cuenta;
 
-INSERT INTO usuarios (usuario, clave, rol) VALUES
-('admin', '1234', 'ADMIN'),
-('empleado1', '1234', 'EMPLEADO');
+--
+-- Procedimientos para la gestión de horarios
+-- Listar todos los horarios disponibles
+CREATE PROCEDURE sp_ListarHorarios()
+SELECT * FROM horarios;
+
+-- Insertar un nuevo horario en la tabla horarios
+CREATE PROCEDURE sp_InsertarHorario(
+    IN dia_in VARCHAR(50),
+    IN horario_in VARCHAR(50)
+)
+INSERT INTO horarios (dia_turnos, horario)
+VALUES (dia_in, horario_in);
+
+-- Eliminar un horario específico
+CREATE PROCEDURE sp_EliminarHorario(IN id_turno_eliminar INT)
+DELETE FROM horarios WHERE id_turno = id_turno_eliminar;
+
+INSERT INTO usuarios (usuario, clave, rol, id_turno) VALUES
+('admin', '1234', 'ADMIN', NULL),
+('empleado1', '1234', 'EMPLEADO', 1);
 
 SELECT * FROM cuentas;
 SELECT * FROM usuarios;
 CALL sp_ListarCuentas();
+
+-- Procedimientos para la gestión de usuarios (empleados y administradores)
+
+-- Lista todos los usuarios con su rol
+CREATE PROCEDURE sp_ListarUsuarios()
+SELECT 
+    u.id_usuario,
+    u.usuario,
+    u.clave,
+    u.rol,
+    u.id_turno,
+    h.dia_turnos,
+    h.horario
+FROM usuarios u
+LEFT JOIN horarios h ON u.id_turno = h.id_turno;
+
+-- Inserta un nuevo usuario en la tabla usuarios
+CREATE PROCEDURE sp_InsertarUsuario(
+    IN usuario_in VARCHAR(50),
+    IN clave_in VARCHAR(100),
+    IN rol_in VARCHAR(20),
+    IN id_turno_in INT
+)
+INSERT INTO usuarios (usuario, clave, rol, id_turno)
+VALUES (usuario_in, clave_in, rol_in, id_turno_in);
+
+-- Elimina un usuario de la tabla usuarios
+CREATE PROCEDURE sp_EliminarUsuario(IN usuario_eliminar VARCHAR(50))
+DELETE FROM usuarios WHERE usuario = usuario_eliminar;
+
+--
+-- Tabla `prestamos`
+--
+-- Representa cada préstamo otorgado. Establece una relación de muchos-a-muchos
+-- entre clientes y usuarios (prestamistas), y referencia la cuenta en la que se
+-- depositará el préstamo. Contiene datos de evaluación (monto solicitado,
+-- número de cuotas, tasa anual, ingresos mensuales, motivo) así como las
+-- fechas de inicio y fin del pago.
+
+CREATE TABLE prestamos (
+    id_prestamo INT AUTO_INCREMENT PRIMARY KEY,
+    dni_persona INT,
+    id_usuario INT,
+    numero_cuenta VARCHAR(20),
+    monto DECIMAL(10,2),
+    num_cuotas INT,
+    tasa_anual DECIMAL(5,2),
+    fecha_inicio DATE,
+    fecha_fin DATE,
+    estado VARCHAR(20),
+    motivo VARCHAR(255),
+    ingresos_mensuales DECIMAL(10,2),
+    FOREIGN KEY (dni_persona) REFERENCES personas(dni_persona),
+    -- La columna id_usuario referencia a la tabla usuarios, ya que
+    -- los prestamistas son también usuarios del sistema. De esta
+    -- manera se mantiene la relación muchos-a-muchos entre clientes y
+    -- empleados.
+    FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario),
+    FOREIGN KEY (numero_cuenta) REFERENCES cuentas(numero_cuenta) ON DELETE CASCADE
+);
+
+-- Procedimientos para la gestión de préstamos
+CREATE PROCEDURE sp_ListarPrestamos()
+SELECT 
+    pr.id_prestamo,
+    pr.dni_persona AS dni,
+    p.nombre AS nombre_cliente,
+    p.apellido AS apellido_cliente,
+    pr.id_usuario,
+    u.usuario AS nombre_usuario,
+    pr.numero_cuenta,
+    pr.monto,
+    pr.num_cuotas,
+    pr.tasa_anual,
+    pr.fecha_inicio,
+    pr.fecha_fin,
+    pr.estado,
+    pr.motivo,
+    pr.ingresos_mensuales
+FROM prestamos pr
+INNER JOIN personas p ON pr.dni_persona = p.dni_persona
+LEFT JOIN usuarios u ON pr.id_usuario = u.id_usuario;
+
+CREATE PROCEDURE sp_ListarPrestamosPorCliente(IN dni_buscar INT)
+SELECT 
+    id_prestamo,
+    dni_persona AS dni,
+    id_usuario,
+    numero_cuenta,
+    monto,
+    num_cuotas,
+    tasa_anual,
+    fecha_inicio,
+    fecha_fin,
+    estado,
+    motivo,
+    ingresos_mensuales
+FROM prestamos 
+WHERE dni_persona = dni_buscar;
+
+-- Lista los préstamos registrados por un usuario específico
+CREATE PROCEDURE sp_ListarPrestamosPorUsuario(IN id_buscar INT)
+SELECT 
+    pr.id_prestamo,
+    pr.dni_persona AS dni,
+    pr.id_usuario,
+    pr.numero_cuenta,
+    pr.monto,
+    pr.num_cuotas,
+    pr.tasa_anual,
+    pr.fecha_inicio,
+    pr.fecha_fin,
+    pr.estado,
+    pr.motivo,
+    pr.ingresos_mensuales
+FROM prestamos pr
+WHERE pr.id_usuario = id_buscar;
+
+CREATE PROCEDURE sp_InsertarPrestamo(
+    IN dni_in INT,
+    IN id_usuario_in INT,
+    IN numero_cuenta VARCHAR(20),
+    IN monto DECIMAL(10,2),
+    IN num_cuotas INT,
+    IN tasa_anual DECIMAL(5,2),
+    IN fecha_inicio DATE,
+    IN fecha_fin DATE,
+    IN estado VARCHAR(20),
+    IN motivo VARCHAR(255),
+    IN ingresos_mensuales DECIMAL(10,2)
+)
+INSERT INTO prestamos (
+    dni_persona,
+    id_usuario,
+    numero_cuenta,
+    monto,
+    num_cuotas,
+    tasa_anual,
+    fecha_inicio,
+    fecha_fin,
+    estado,
+    motivo,
+    ingresos_mensuales
+)
+VALUES (
+    dni_in,
+    id_usuario_in,
+    numero_cuenta,
+    monto,
+    num_cuotas,
+    tasa_anual,
+    fecha_inicio,
+    fecha_fin,
+    estado,
+    motivo,
+    ingresos_mensuales
+);
+
+CREATE PROCEDURE sp_ModificarPrestamo(
+    IN id_prestamo_in INT,
+    IN monto DECIMAL(10,2),
+    IN num_cuotas INT,
+    IN tasa_anual DECIMAL(5,2),
+    IN fecha_inicio DATE,
+    IN fecha_fin DATE,
+    IN estado VARCHAR(20),
+    IN motivo VARCHAR(255),
+    IN ingresos_mensuales DECIMAL(10,2)
+)
+UPDATE prestamos
+SET monto = monto,
+    num_cuotas = num_cuotas,
+    tasa_anual = tasa_anual,
+    fecha_inicio = fecha_inicio,
+    fecha_fin = fecha_fin,
+    estado = estado,
+    motivo = motivo,
+    ingresos_mensuales = ingresos_mensuales
+WHERE id_prestamo = id_prestamo_in;
+
+CREATE PROCEDURE sp_EliminarPrestamo(IN id_prestamo_in INT)
+DELETE FROM prestamos WHERE id_prestamo = id_prestamo_in;
+
+SET FOREIGN_KEY_CHECKS = 0;
+
+TRUNCATE TABLE prestamos;
+TRUNCATE TABLE cuentas;
+TRUNCATE TABLE usuarios;
+TRUNCATE TABLE personas;
+TRUNCATE TABLE horarios;
+
+SET FOREIGN_KEY_CHECKS = 1;
+
+
+USE scotiabank_db;
+
+ALTER TABLE horarios  AUTO_INCREMENT = 1;
+ALTER TABLE usuarios  AUTO_INCREMENT = 1;
+ALTER TABLE prestamos AUTO_INCREMENT = 1;
+
+
+INSERT INTO horarios (dia_turnos, horario) VALUES
+('Lunes a Viernes', '09:00 - 13:00'),
+('Lunes a Viernes', '14:00 - 18:00'),
+('Sábados',         '09:00 - 13:00'),
+('Full Time',       '09:00 - 18:00');
+
+
+INSERT INTO personas (dni_persona, nombre, apellido, direccion, telefono, email) VALUES
+(70123458, 'Jorge',    'Pérez',     'Av. Brasil 123, Lima',   '999111222', 'jorge.perez@mail.com'),
+(70894512, 'Carlos',   'Inga',      'Jr. Cusco 456, Lima',    '999222333', 'carlos.inga@mail.com'),
+(76987412, 'Patricia', 'Quispe',    'Av. Arequipa 789, Lima', '999333444', 'patricia.quispe@mail.com'),
+(71458963, 'María',    'Valverde',  'Av. La Marina 321',      '999444555', 'maria.valverde@mail.com'),
+(72589641, 'Julio',    'Mendoza',   'Jr. Lima 654, Callao',   '999555666', 'julio.mendoza@mail.com');
+
+
+
+INSERT INTO usuarios (usuario, clave, rol, id_turno) VALUES
+('admin1',    'admin123', 'ADMIN',    1),   -- admin con turno 1
+('empleado1', 'emp123',   'EMPLEADO', 2),
+('empleado2', 'emp456',   'EMPLEADO', 3);
+
+
+INSERT INTO cuentas
+(numero_cuenta, dni_persona, tipo_cuenta, monto, num_cuotas, fecha_inicio, fecha_fin)
+VALUES
+('CT-70123458', 70123458, 'Ahorro',    780.00,  0,  '2025-01-01', '2025-01-01'),
+('CT-70894512', 70894512, 'Credito',  8500.00, 24,  '2025-02-01', '2027-01-01'),
+('CT-76987412', 76987412, 'Ahorro',   1200.00,  0,  '2025-03-01', '2025-03-01'),
+('CT-71458963', 71458963, 'Ahorro',    950.20,  0,  '2025-04-01', '2025-04-01'),
+('CT-72589641', 72589641, 'Corriente',4500.00, 12,  '2025-05-01', '2026-04-01');
+
+
+INSERT INTO prestamos
+(dni_persona, id_usuario, numero_cuenta, monto, num_cuotas, tasa_anual,
+ fecha_inicio, fecha_fin, estado, motivo, ingresos_mensuales)
+VALUES (70123458, 2, 'CT-70123458', 3000.00, 12, 12.00,
+ '2025-06-01', '2026-05-01', 'APROBADO',
+ 'Compra de electrodomésticos', 2500.00),
+
+
+(70894512, 2, 'CT-70894512', 8000.00, 24, 14.00,
+ '2025-07-01', '2027-06-01', 'APROBADO',
+ 'Mejoras del hogar', 4000.00),
+
+(76987412, 3, 'CT-76987412', 5000.00, 18, 13.50,
+ '2025-08-01', '2027-01-01', 'APROBADO',
+ 'Estudios de posgrado', 3500.00),
+
+
+(71458963, 3, 'CT-71458963', 2000.00, 10, 11.00,
+ '2025-09-01', '2026-06-01', 'APROBADO',
+ 'Viaje familiar', 2200.00),
+
+
+(72589641, 2, 'CT-72589641', 15000.00, 36, 15.00,
+ '2025-10-01', '2028-09-01', 'RECHAZADO',
+ 'Monto solicitado excede capacidad de pago', 2500.00);

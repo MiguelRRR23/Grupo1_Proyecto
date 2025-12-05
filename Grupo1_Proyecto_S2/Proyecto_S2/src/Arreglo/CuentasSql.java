@@ -26,14 +26,23 @@ public class CuentasSql {
                     ""
                 );
 
+                // Crear un banco genérico, ya que el nombre no se almacena en la tabla
                 Banco b = new Banco(1, "Scotiabank", "", "", "", "", "");
+
+                // Leer las nuevas columnas (num_cuotas y fechas) de la consulta
+                int numCuotas = rs.getInt("num_cuotas");
+                java.sql.Date fechaInicio = rs.getDate("fecha_inicio");
+                java.sql.Date fechaFin = rs.getDate("fecha_fin");
 
                 Cuenta c = new Cuenta(
                     rs.getString("numero_cuenta"),
                     p,
                     b,
                     rs.getString("tipo_cuenta"),
-                    rs.getDouble("monto")
+                    rs.getDouble("monto"),
+                    numCuotas,
+                    fechaInicio,
+                    fechaFin
                 );
 
                 lista.add(c);
@@ -58,12 +67,12 @@ public class CuentasSql {
 
             if (rs.next()) {
                 return new Persona(
-                    rs.getInt("DNI"),
-                    rs.getString("NOMBRE"),
-                    rs.getString("APELLIDO"),
-                    rs.getString("DIRECCION"),
-                    rs.getString("TELEFONO"),
-                    rs.getString("EMAIL")
+                    rs.getInt("dni_persona"),
+                    rs.getString("nombre"),
+                    rs.getString("apellido"),
+                    rs.getString("direccion"),
+                    rs.getString("telefono"),
+                    rs.getString("email")
                 );
             }
 
@@ -118,12 +127,19 @@ public class CuentasSql {
 
                 Banco b = new Banco(1, "Scotiabank", "", "", "", "", "");
 
+                int numCuotas = rs.getInt("num_cuotas");
+                java.sql.Date fechaInicio = rs.getDate("fecha_inicio");
+                java.sql.Date fechaFin = rs.getDate("fecha_fin");
+
                 return new Cuenta(
                     rs.getString("numero_cuenta"),
                     p,
                     b,
                     rs.getString("tipo_cuenta"),
-                    rs.getDouble("monto")
+                    rs.getDouble("monto"),
+                    numCuotas,
+                    fechaInicio,
+                    fechaFin
                 );
             }
 
@@ -138,13 +154,16 @@ public class CuentasSql {
     public boolean insertar(Cuenta c) {
         try {
             Connection cx = conexionMysql.getConexion();
-            CallableStatement sp = cx.prepareCall("{CALL sp_InsertarCuenta(?,?,?,?,?)}");
+            // Llamar al procedimiento que ahora admite cuotas y fechas
+            CallableStatement sp = cx.prepareCall("{CALL sp_InsertarCuenta(?,?,?,?,?,?,?)}");
 
             sp.setString(1, c.getNumeroCuenta());
             sp.setInt(2, c.getPersona().getDni());
             sp.setString(3, c.getTipoCuenta());
             sp.setDouble(4, c.getMonto());
-            sp.setString(5, c.getBanco().getNombreBanco());
+            sp.setInt(5, c.getNumeroCuotas());
+            sp.setDate(6, c.getFechaInicio());
+            sp.setDate(7, c.getFechaFin());
 
             sp.execute();
             return true;
@@ -196,11 +215,15 @@ public class CuentasSql {
     public boolean modificar(Cuenta c) {
         try {
             Connection cx = conexionMysql.getConexion();
-            CallableStatement sp = cx.prepareCall("{CALL sp_ModificarCuenta(?,?,?)}");
+            // El procedimiento ahora actualiza tipo, monto, cuotas y fechas
+            CallableStatement sp = cx.prepareCall("{CALL sp_ModificarCuenta(?,?,?,?,?,?)}");
 
             sp.setString(1, c.getNumeroCuenta());
             sp.setString(2, c.getTipoCuenta());
             sp.setDouble(3, c.getMonto());
+            sp.setInt(4, c.getNumeroCuotas());
+            sp.setDate(5, c.getFechaInicio());
+            sp.setDate(6, c.getFechaFin());
 
             sp.execute();
             return true;

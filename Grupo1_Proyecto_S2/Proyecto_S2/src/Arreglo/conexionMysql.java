@@ -7,7 +7,7 @@ public class conexionMysql {
 
     private static final String URL = "jdbc:mysql://localhost:3306/scotiabank_db";
     private static final String USER = "root";
-    private static final String PASS = "gustavo"; 
+    private static final String PASS = "d4vicitope"; 
 
     public static Connection getConexion() {
         Connection cnx = null;
